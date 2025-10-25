@@ -1,0 +1,269 @@
+/* ========== GLOBAL ========== */
+body {
+  margin: 0;
+  font-family: "Times New Roman", serif;
+  background-color: #fdf8e1ff;
+  color: #000;
+}
+
+/* ========== HEADER ========== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fdf8e1ff;
+  padding: 20px 60px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.menu {
+  display: flex;
+  gap: 60px;
+}
+
+.menu a,
+.login {
+  text-decoration: none;
+  color: #000;
+  font-size: 18px;
+  transition: color 0.3s;
+}
+
+.menu a:hover,
+.login:hover,
+.actions i:hover {
+  color: #777;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.actions i {
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.cart {
+  position: relative;
+}
+
+.cart .count {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 50%;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+
+/* ========== FOOTER ========== */
+
+.footer {
+  background-color: #081c58; /* Xanh navy đậm */
+  color: #ffffff; /* Chữ trắng */
+  padding: 30px 0;
+}
+
+.footer h4 {
+  font-weight: normal;
+  font-size: 1.5rem;
+  color: #ffffff; /* Tiêu đề trắng */
+}
+
+.footer a {
+  color: #ffffff; /* Link trắng */
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer a:hover {
+  color: #d4af37; /* Vàng ánh kim khi hover */
+  text-decoration: underline;
+}
+
+.footer p {
+  color: #ffffff; /* Văn bản trắng */
+}
+
+.footer .fa-brands,
+.footer .fa-solid {
+  font-size: 1.2rem;
+  color: #ffffff; /* Icon trắng */
+  transition: color 0.3s ease;
+}
+
+.footer .fa-brands:hover,
+.footer .fa-solid:hover {
+  color: #d4af37; /* Icon chuyển vàng khi hover */
+}
+
+/* ========== PRODUCT PAGE ========== */
+.breadcrumb-nav {
+  font-size: 14px;
+}
+
+.breadcrumb-nav a {
+  text-decoration: none;
+  color: #000;
+}
+
+.breadcrumb-nav a:hover {
+  text-decoration: underline;
+}
+
+/* Sidebar */
+aside h5 {
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+aside ul li {
+  margin-bottom: 10px;
+}
+
+aside ul li a {
+  color: #000;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+aside ul li a:hover {
+  color: #666;
+}
+
+.filter-section {
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+}
+
+/* Product cards */
+.card img {
+  border-radius: 5px;
+  transition: transform 0.3s ease;
+}
+
+.card img:hover {
+  transform: scale(1.05);
+}
+
+.card-body p {
+  color: #000;
+}
+
+/* ========== PRODUCT DETAIL PAGE ========== */
+.product-container {
+  background-color: #faf2e7;
+  border-radius: 8px;
+  padding: 30px;
+}
+
+.product-image {
+  border-radius: 6px;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+.product-info h3 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.length-select {
+  max-width: 300px;
+}
+
+.quantity-group {
+  max-width: 140px;
+}
+
+.add-to-cart {
+  border-width: 2px;
+  transition: all 0.3s ease;
+}
+
+.add-to-cart:hover {
+  background-color: #2c2b29;
+  color: white;
+}
+
+/* Social icons */
+.social-icons a {
+  font-size: 1.3rem;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.social-icons a:hover {
+  color: #d4af37;
+}
+
+/* Review box */
+.review-box {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.rating-star {
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.rating-star.fas,
+.rating-star:hover {
+  color: #f2b01e;
+}
+
+/* ========== CART PAGE ========== */
+.cart-page {
+  background-color: #f9f9e6;
+  padding: 30px 0;
+}
+
+.cart-img {
+  width: 100px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.summary {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+button.btn-dark {
+  background-color: #3e3d3a;
+  border: none;
+}
+
+button.btn-dark:hover {
+  background-color: #2c2b29;
+}
+
+.quantity-control button {
+  width: 30px;
+  height: 30px;
+  font-weight: bold;
+}
+
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+
