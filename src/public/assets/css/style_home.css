@@ -1,0 +1,150 @@
+/* HEADER */
+body {
+  margin: 0;
+  font-family: "Times New Roman", serif;
+  background-color: #fdf8e1ff;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fbefdbff;
+  padding: 20px 60px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 500;
+  color: #000;
+}
+
+.menu {
+  display: flex;
+  gap: 60px;
+}
+
+.menu a {
+  text-decoration: none;
+  color: #000;
+  font-size: 18px;
+  transition: color 0.3s;
+}
+
+.menu a:hover {
+  color: #777;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.actions i {
+  font-size: 18px;
+  cursor: pointer;
+  color: #000;
+}
+
+.login {
+  text-decoration: none;
+  color: #000;
+  font-size: 18px;
+  transition: color 0.3s;
+}
+
+.login:hover {
+  color: #777;
+}
+
+.cart {
+  position: relative;
+}
+
+.cart i {
+  font-size: 20px;
+}
+
+.cart .count {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 50%;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+
+/* FOOTER */
+.footer {
+  background-color: #081c58;
+  color: white;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+.footer h4 {
+  font-family: "Times New Roman", serif;
+  font-weight: normal;
+  font-size: 1.5rem;
+}
+
+.footer .fa-brands {
+  font-size: 1.2rem;
+  transition: color 0.2s;
+  color: white
+}
+
+.footer .fa-brands:hover {
+  color: rgb(252, 232, 232);
+}
+
+
+/* --- CATEGORY SECTION --- */
+.category-card {
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.category-card:hover img {
+  transform: scale(1.05);
+}
+
+.category-card img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.category-card h5 {
+  font-weight: 600;
+  color: #3c3c3c;
+  margin-top: 20px;
+}
+
+/* --- TRENDING SECTION --- */
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  transition: all 0.3s;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: #000;
+  border-radius: 50%;
+  padding: 10px;
+}
