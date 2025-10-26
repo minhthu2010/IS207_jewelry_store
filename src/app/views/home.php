@@ -1,3 +1,4 @@
+<?php include __DIR__ . '/templates/header.php'; ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -114,3 +115,4 @@
 
 </body>
 </html>
+<?php include __DIR__ . '/templates/footer.php'; ?>
