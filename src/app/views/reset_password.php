@@ -22,7 +22,8 @@
                 <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="?action=reset_password">
+            <form method="POST" action="forgot_password.php?action=reset_password">
+
                 <input type="hidden" name="email" value="<?= htmlspecialchars($_SESSION['token_email'] ?? '') ?>">
                 <input type="hidden" name="token" value="<?= htmlspecialchars($_SESSION['reset_token'] ?? '') ?>">
                 
