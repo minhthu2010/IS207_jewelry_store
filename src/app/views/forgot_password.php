@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,7 +24,8 @@
                 <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="?action=send_reset_link">
+            <form method="POST" action="forgot_password.php?action=send_reset_link">
+
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon"></i>
                     <input type="email" name="email" class="form-control" placeholder="Enter your email" required />
