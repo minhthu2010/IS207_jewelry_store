@@ -1,127 +1,119 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
 require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/../models/customer.php';
+require_once __DIR__ . '/../../PHPMailer/PHPMailer-master/src/Exception.php';
+require_once __DIR__ . '/../../PHPMailer/PHPMailer-master/src/PHPMailer.php';
+require_once __DIR__ . '/../../PHPMailer/PHPMailer-master/src/SMTP.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class ForgotPasswordController {
-    public function showForm() {
-        include __DIR__ . '/../views/forgot_password.php';
+    private $conn;
+
+    public function __construct($conn) {
+        $this->conn = $conn;
     }
 
-    public function sendResetLink() {
-        global $conn;
-        
-        $email = $_POST['email'] ?? '';
-        
-        if (empty($email)) {
-            $error = "Please enter your email address!";
-            include __DIR__ . '/../views/forgot_password.php';
-            return;
+    public function handleRequest() {
+        $action = $_GET['action'] ?? '';
+        switch ($action) {
+            case 'send_reset_link':
+                $this->sendResetLink();
+                break;
+            case 'verify_otp':
+                $this->verifyOtp();
+                break;
+            case 'reset_password':
+                $this->resetPassword();
+                break;
+            default:
+                include __DIR__ . '/../views/forgot_password.php';
         }
-        
-        $customer = new Customer($conn);
-        $customer->email = $email;
-        
-        if (!$customer->emailExists()) {
-            $error = "Email not found!";
-            include __DIR__ . '/../views/forgot_password.php';
-            return;
-        }
-        
-        // Generate OTP (6 digits)
-        $otp = rand(100000, 999999);
-        
-        // Save OTP to session (expires in 10 minutes)
-        $_SESSION['reset_otp'] = $otp;
-        $_SESSION['reset_email'] = $email;
-        $_SESSION['otp_expiry'] = time() + 600; // 10 minutes
-        
-        // For demo, we'll show OTP on screen (remove this in production)
-        $debug_otp = $otp;
-        
-        include __DIR__ . '/../views/verify_otp.php';
     }
-    
-    public function verifyOtp() {
+
+    private function sendResetLink() {
         $email = $_POST['email'] ?? '';
-        $user_otp = $_POST['otp'] ?? '';
-        
-        // Check if OTP exists and not expired
-        if (!isset($_SESSION['reset_otp']) || 
-            !isset($_SESSION['reset_email']) || 
-            !isset($_SESSION['otp_expiry']) ||
-            time() > $_SESSION['otp_expiry']) {
-            
-            $error = "OTP has expired! Please request a new one.";
+        $stmt = $this->conn->prepare("SELECT * FROM customer WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            $error = "Email không tồn tại trong hệ thống.";
             include __DIR__ . '/../views/forgot_password.php';
             return;
         }
-        
-        // Verify OTP
-        if ($_SESSION['reset_otp'] == $user_otp && $_SESSION['reset_email'] == $email) {
-            // OTP verified, generate reset token
-            $token = bin2hex(random_bytes(32));
-            $_SESSION['reset_token'] = $token;
-            $_SESSION['token_email'] = $email;
-            $_SESSION['token_expiry'] = time() + 1800; // 30 minutes
-            
+
+        $otp = rand(100000, 999999);
+        $_SESSION['reset_email'] = $email;
+        $_SESSION['otp'] = $otp;
+        $_SESSION['otp_expire'] = time() + 300;
+
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'Nhathuoc21623@gmail.com'; 
+            $mail->Password   = 'bvrqsgxdiahupvsa';      
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+
+            $mail->setFrom('Nhathuoc21623@gmail.com', 'Jewelry Website');
+            $mail->addAddress($email);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Your OTP Code for Password Reset';
+            $mail->Body    = "<p>Your OTP code is: <b>$otp</b></p><p>This code expires in 5 minutes.</p>";
+
+            $mail->send();
+            include __DIR__ . '/../views/verify_OTP.php';
+        } catch (Exception $e) {
+            $error = "Không thể gửi email. Lỗi: {$mail->ErrorInfo}";
+            include __DIR__ . '/../views/forgot_password.php';
+        }
+    }
+
+    private function verifyOtp() {
+        $entered_otp = $_POST['otp'] ?? '';
+        if (!isset($_SESSION['otp']) || time() > $_SESSION['otp_expire']) {
+            $error = "Mã OTP đã hết hạn.";
+            include __DIR__ . '/../views/forgot_password.php';
+            return;
+        }
+
+        if ($entered_otp == $_SESSION['otp']) {
+            $_SESSION['token_email'] = $_SESSION['reset_email'];
+            $_SESSION['reset_token'] = bin2hex(random_bytes(16));
             include __DIR__ . '/../views/reset_password.php';
         } else {
-            $error = "Invalid OTP!";
-            include __DIR__ . '/../views/verify_otp.php';
+            $error = "Mã OTP không chính xác.";
+            include __DIR__ . '/../views/verify_OTP.php';
         }
     }
-    
-    public function resetPassword() {
-        global $conn;
-        
+
+    private function resetPassword() {
         $email = $_POST['email'] ?? '';
-        $token = $_POST['token'] ?? '';
         $new_password = $_POST['new_password'] ?? '';
         $confirm_password = $_POST['confirm_password'] ?? '';
-        
-        // Validate token
-        if (!isset($_SESSION['reset_token']) || 
-            $_SESSION['reset_token'] !== $token ||
-            $_SESSION['token_email'] !== $email ||
-            time() > $_SESSION['token_expiry']) {
-            
-            $error = "Invalid or expired reset token!";
-            include __DIR__ . '/../views/forgot_password.php';
-            return;
-        }
-        
-        // Validate passwords
+
         if ($new_password !== $confirm_password) {
-            $error = "Passwords do not match!";
+            $error = "Mật khẩu xác nhận không khớp.";
             include __DIR__ . '/../views/reset_password.php';
             return;
         }
-        
-        if (strlen($new_password) < 6) {
-            $error = "Password must be at least 6 characters!";
-            include __DIR__ . '/../views/reset_password.php';
-            return;
-        }
-        
-        // Update password in database
-        $customer = new Customer($conn);
-        if ($customer->updatePassword($email, $new_password)) {
-            // Clear all reset sessions
-            $this->clearResetSessions();
-            include __DIR__ . '/../views/password_reset_success.php';
-        } else {
-            $error = "Password reset failed!";
-            include __DIR__ . '/../views/reset_password.php';
-        }
-    }
-    
-    private function clearResetSessions() {
-        unset($_SESSION['reset_otp']);
-        unset($_SESSION['reset_email']);
-        unset($_SESSION['otp_expiry']);
-        unset($_SESSION['reset_token']);
-        unset($_SESSION['token_email']);
-        unset($_SESSION['token_expiry']);
+
+        $hashed = password_hash($new_password, PASSWORD_BCRYPT);
+        $stmt = $this->conn->prepare("UPDATE customer SET password = ? WHERE email = ?");
+        $stmt->execute([$hashed, $email]);
+
+        session_destroy();
+        include __DIR__ . '/../views/password_reset_success.php';
     }
 }
-?>
