@@ -1,7 +1,3 @@
-
-<?php
-session_start();
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,20 +10,17 @@ session_start();
   
   <!-- CSS tùy chỉnh -->
   <link rel="stylesheet" href="../public/assets/css/style.css">
-   <link rel="stylesheet" href="../public/assets/css/style_header.css">
+  <link rel="stylesheet" href="../public/assets/css/style_header.css">
   
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-  
-
 </head>
 
 <body>
   <header class="navbar">
   <div class="logo">D. Patel</div>
   <nav class="menu">
-    <a href="#">Shop All</a>
+    <a href="index.php?action=list">Shop All</a>
     <a href="#">About</a>
     <a href="#">Contact</a>
   </nav>
@@ -52,14 +45,52 @@ session_start();
 <?php endif; ?>
 </div>
 
-
     <div class="cart">
-      <i class="fas fa-shopping-bag"></i>
-      <span class="count">0</span>
+      <a href="index.php?action=cart" class="cart-link">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="count" id="cart-count" style="display: none;">0</span>
+      </a>
     </div>
   </div>
 </header>
+
 <script>
+// Cập nhật số lượng giỏ hàng
+function updateCartCount(count) {
+    const cartCount = document.getElementById('cart-count');
+    if (cartCount) {
+        cartCount.textContent = count;
+        if (count == 0) {
+            cartCount.style.display = 'none';
+        } else {
+            cartCount.style.display = 'flex';
+        }
+    }
+}
+
+// Lấy số lượng giỏ hàng từ server khi trang loaded
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (isset($_SESSION['customer'])): ?>
+    fetch('../app/controllers/cartController.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=get_cart_count'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartCount(data.itemCount);
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching cart count:', error);
+    });
+    <?php endif; ?>
+});
+
+// Các event listeners khác giữ nguyên...
 const avatar = document.getElementById('avatar');
 const dropdown = document.getElementById('dropdown-menu');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -85,8 +116,8 @@ if (logoutBtn) {
     const data = await res.json();
 
     if (data.status === 'success') {
-      // Thay avatar + fullname bằng nút Login 
       userArea.innerHTML = `<a href="login.php" class="login" id="loginLink">Log In</a>`;
+      updateCartCount(0);
     }
   });
 }
