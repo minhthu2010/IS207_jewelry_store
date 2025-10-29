@@ -18,31 +18,33 @@
 
     <div class="login-right">
       <h2>Log In</h2>
-      <form>
-        <div class="input-group">
-          <i class="fa-solid fa-user icon"></i>
-          <input type="text" class="form-control" placeholder="Username or email" required />
-        </div>
+      <form method="POST" action="">
+  <div class="input-group">
+    <i class="fa-solid fa-user icon"></i>
+    <input type="text" name="email" class="form-control" placeholder="Email" required />
+  </div>
 
-        <div class="input-group">
-          <i class="fa-solid fa-lock icon"></i>
-          <input type="password" class="form-control" placeholder="Password" required />
-        </div>
+  <div class="input-group">
+    <i class="fa-solid fa-lock icon"></i>
+    <input type="password" name="password" class="form-control" placeholder="Password" required />
+  </div>
 
-        <div class="options">
-          <div>
-            <input type="checkbox" id="remember" />
-            <label for="remember">Remember me</label>
-          </div>
-          <a href="#">Forgot password?</a>
-        </div>
+  <div class="options">
+    <div>
+        <input type="checkbox" id="remember" />
+        <label for="remember">Remember me</label>
+    </div>
+    <a href="forgot_password.php">Forgot password?</a> 
+</div>
 
-        <button type="submit" class="btn-login w-100">Log In</button>
+  <button type="submit" class="btn-login w-100">Log In</button>
 
-        <p class="signup-text">
-          New here? <a href="#">Create an Account</a>
-        </p>
-      </form>
+  <p class="signup-text">
+    New here? <a href="sign_up.php">Create an Account</a>
+  </p>
+</form>
+
+
     </div>
   </div>
 </body>
