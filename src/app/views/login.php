@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login Page</title>
-  <link rel="stylesheet" href="./public/assets/css/bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="../public/assets/css/bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../public/assets/css/style_login.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
@@ -18,6 +18,15 @@
 
     <div class="login-right">
       <h2>Log In</h2>
+      <?php if (!empty($error)): ?>
+  <div class="alert alert-danger error-message">
+      <?= htmlspecialchars($error) ?>
+  </div>
+<?php endif; ?>
+
+
+
+
       <form method="POST" action="">
   <div class="input-group">
     <i class="fa-solid fa-user icon"></i>
@@ -30,12 +39,13 @@
   </div>
 
   <div class="options">
-    <div>
-        <input type="checkbox" id="remember" />
-        <label for="remember">Remember me</label>
-    </div>
-    <a href="forgot_password.php">Forgot password?</a> 
+  <div>
+    <input type="checkbox" id="remember" name="remember" />
+    <label for="remember">Remember me</label>
+  </div>
+  <a href="forgot_password.php">Forgot password?</a> 
 </div>
+
 
   <button type="submit" class="btn-login w-100">Log In</button>
 
