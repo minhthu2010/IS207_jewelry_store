@@ -138,6 +138,7 @@ if (!empty($product['variants'])) {
 // Biến toàn cục
 let currentVariantId = <?= $defaultVariantId ?>;
 let currentQuantity = 1;
+let maxStock = 0; // Sẽ được cập nhật từ database
 
 console.log('Auto-selected variant:', {
     variantId: currentVariantId,
@@ -171,7 +172,7 @@ function selectSize(element) {
     updateMaxQuantity();
 }
 
-// Xử lý số lượng
+// Xử lý số lượng - THÊM KIỂM TRA TỒN KHO
 document.querySelector('.quantity-minus')?.addEventListener('click', function() {
     const quantityInput = document.getElementById('quantity');
     if (parseInt(quantityInput.value) > 1) {
@@ -182,13 +183,35 @@ document.querySelector('.quantity-minus')?.addEventListener('click', function() 
 
 document.querySelector('.quantity-plus')?.addEventListener('click', function() {
     const quantityInput = document.getElementById('quantity');
-    quantityInput.value = parseInt(quantityInput.value) + 1;
+    const currentValue = parseInt(quantityInput.value);
+    
+    // KIỂM TRA NẾU VƯỢT QUÁ TỒN KHO
+    if (currentValue >= maxStock) {
+        alert('Số lượng tồn kho không đủ! Chỉ còn ' + maxStock + ' sản phẩm.');
+        return;
+    }
+    
+    quantityInput.value = currentValue + 1;
     currentQuantity = quantityInput.value;
 });
 
 document.getElementById('quantity')?.addEventListener('change', function() {
-    if (parseInt(this.value) < 1) this.value = 1;
-    currentQuantity = this.value;
+    let value = parseInt(this.value);
+    
+    if (isNaN(value) || value < 1) {
+        value = 1;
+        this.value = 1;
+    }
+    
+    // KIỂM TRA NẾU VƯỢT QUÁ TỒN KHO
+    if (value > maxStock) {
+        alert('Số lượng tồn kho không đủ! Chỉ còn ' + maxStock + ' sản phẩm.');
+        this.value = maxStock;
+        value = maxStock;
+    }
+    
+    this.value = value;
+    currentQuantity = value;
 });
 
 // Hàm kiểm tra tồn kho
@@ -277,19 +300,20 @@ async function updateMaxQuantity() {
     try {
         const stockCheck = await checkStock(currentVariantId, 1);
         if (stockCheck.success) {
-            const maxQuantity = stockCheck.current_stock;
+            // CẬP NHẬT BIẾN maxStock TOÀN CỤC
+            maxStock = stockCheck.current_stock;
             const quantityInput = document.getElementById('quantity');
             
             // Hiển thị thông tin tồn kho
             const stockInfo = document.getElementById('stock-info');
             if (stockInfo) {
                 stockInfo.innerHTML = 
-                    `<small class="${maxQuantity > 0 ? 'text-success' : 'text-danger'}">
-                        ${maxQuantity > 0 ? `Còn ${maxQuantity} sản phẩm` : 'Hết hàng'}
+                    `<small class="${maxStock > 0 ? 'text-success' : 'text-danger'}">
+                        ${maxStock > 0 ? `Còn ${maxStock} sản phẩm` : 'Hết hàng'}
                     </small>`;
                 
                 // Disable nút thêm nếu hết hàng
-                if (maxQuantity === 0) {
+                if (maxStock === 0) {
                     document.querySelector('.add-to-cart-btn').disabled = true;
                     quantityInput.disabled = true;
                 } else {
@@ -297,13 +321,15 @@ async function updateMaxQuantity() {
                     quantityInput.disabled = false;
                     
                     // Giới hạn số lượng nhập
-                    quantityInput.setAttribute('max', maxQuantity);
-                    if (parseInt(quantityInput.value) > maxQuantity) {
-                        quantityInput.value = maxQuantity;
-                        currentQuantity = maxQuantity;
+                    quantityInput.setAttribute('max', maxStock);
+                    if (parseInt(quantityInput.value) > maxStock) {
+                        quantityInput.value = maxStock;
+                        currentQuantity = maxStock;
                     }
                 }
             }
+            
+            console.log('Updated max stock:', maxStock);
         }
     } catch (error) {
         console.error('Lỗi lấy thông tin tồn kho:', error);
@@ -315,5 +341,4 @@ document.addEventListener('DOMContentLoaded', function() {
     updateMaxQuantity();
 });
 </script>
-
 <?php include __DIR__ . '/templates/footer.php'; ?>
