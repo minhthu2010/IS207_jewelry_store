@@ -55,6 +55,17 @@ class CartModel {
         return $result['total_items'] ? $result['total_items'] : 0;
     }
 
+    public function getVariantWithProduct($variant_id) {
+        $query = "SELECT pv.*, p.name as product_name, p.description,
+                        pv.price as base_price, p.category_id
+                FROM product_variant pv 
+                JOIN product p ON pv.product_id = p.pro_id 
+                WHERE pv.variant_id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$variant_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function getCartItems($cart_id) {
         $query = "SELECT 
                     ci.id,
