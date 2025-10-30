@@ -68,7 +68,13 @@ class CartModel {
                     pv.sku,
                     p.pro_id as product_id,
                     p.name as product_name,
-                    p.description
+                    p.description,
+                    -- Lấy ảnh đầu tiên của sản phẩm
+                    (SELECT pi.image_url 
+                     FROM product_image pi 
+                     WHERE pi.product_id = p.pro_id 
+                     ORDER BY pi.sort_order ASC, pi.image_id ASC 
+                     LIMIT 1) as product_image
                   FROM " . $this->cart_item_table . " ci 
                   JOIN product_variant pv ON ci.variant_id = pv.variant_id 
                   JOIN product p ON pv.product_id = p.pro_id 
@@ -97,6 +103,33 @@ class CartModel {
         $query = "UPDATE " . $this->cart_item_table . " SET quantity = ? WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         return $stmt->execute([$quantity, $item_id]);
+    }
+
+    // THÊM: Kiểm tra tồn kho
+    public function checkStock($variant_id, $requested_quantity) {
+        $query = "SELECT stock_quantity FROM product_variant WHERE variant_id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$variant_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($result && $result['stock_quantity'] >= $requested_quantity) {
+            return ['available' => true, 'current_stock' => $result['stock_quantity']];
+        } else {
+            return [
+                'available' => false, 
+                'current_stock' => $result ? $result['stock_quantity'] : 0
+            ];
+        }
+    }
+
+    // THÊM: Lấy thông tin tồn kho
+    public function getStockInfo($variant_id) {
+        $query = "SELECT stock_quantity FROM product_variant WHERE variant_id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$variant_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return $result ? $result['stock_quantity'] : 0;
     }
 }
 ?>
