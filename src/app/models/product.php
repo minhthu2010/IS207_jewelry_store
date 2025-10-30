@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../config/config.php';
 
 class Product {
 
-    // 🟢 Lấy tất cả sản phẩm (kèm ảnh chính và giá thấp nhất)
+    // Lấy tất cả sản phẩm (kèm ảnh chính và giá thấp nhất)
     public static function getAllProducts() {
         global $conn;
 
@@ -26,7 +26,7 @@ class Product {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 🟢 Lấy chi tiết 1 sản phẩm theo ID (chỉ 1 dòng)
+    // Lấy chi tiết 1 sản phẩm theo ID (chỉ 1 dòng)
     public static function getProductById($id) {
         global $conn;
 
@@ -48,8 +48,7 @@ class Product {
         $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC); // chỉ trả về 1 dòng
     }
-
-    // 🟢 Lấy tất cả ảnh của sản phẩm (nếu muốn hiển thị nhiều ảnh)
+    
     public static function getProductImages($id) {
         global $conn;
 
@@ -65,7 +64,7 @@ class Product {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 🟢 Lấy tất cả các biến thể (variant) theo size, giá,...
+    // Lấy tất cả các biến thể (variant) theo size, giá,...
     public static function getVariantsByProduct($id) {
         global $conn;
 
