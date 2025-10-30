@@ -56,11 +56,6 @@
 .cart-item {
     transition: all 0.3s ease;
 }
-
-.cart-item:hover {
-    background-color: #f8f9fa;
-}
-
 .quantity-box .btn {
     padding: 0.25rem 0.5rem;
 }
