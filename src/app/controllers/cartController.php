@@ -1,4 +1,6 @@
 <?php
+// CartController.php - FIXED VERSION
+
 // BẬT HIỂN THỊ LỖI
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -86,7 +88,7 @@ if (isset($_POST['action'])) {
                 }
                 break;
 
-            case 'check_stock': // THÊM: Kiểm tra tồn kho
+            case 'check_stock':
                 $variant_id = $_POST['variant_id'] ?? null;
                 $quantity = $_POST['quantity'] ?? 1;
                 if ($variant_id) {
@@ -143,22 +145,17 @@ class CartController {
         }
 
         try {
-            // Kiểm tra variant tồn tại và lấy thông tin
-            $stmt = $this->conn->prepare("
-                SELECT pv.*, p.name as product_name 
-                FROM product_variant pv 
-                JOIN product p ON pv.product_id = p.pro_id 
-                WHERE pv.variant_id = ?
-            ");
-            $stmt->execute([$variant_id]);
-            $variant = $stmt->fetch(PDO::FETCH_ASSOC);
+            // SỬ DỤNG MODEL để lấy thông tin variant - ĐÃ SỬA
+            $variant = $this->getVariantWithProduct($variant_id);
             
             if (!$variant) {
                 error_log("ERROR: Variant not found - ID: " . $variant_id);
                 return ['success' => false, 'message' => 'Sản phẩm không tồn tại'];
             }
 
-            // KIỂM TRA TỒN KHO TRƯỚC KHI THÊM
+            error_log("Found variant: " . $variant['product_name'] . " (Size: " . ($variant['size'] ?? 'Default') . ")");
+
+            // KIỂM TRA TỒN KHO TRƯỚC KHI THÊM - SỬ DỤNG MODEL
             $stockCheck = $this->cartModel->checkStock($variant_id, $quantity);
             if (!$stockCheck['available']) {
                 return [
@@ -167,9 +164,7 @@ class CartController {
                 ];
             }
 
-            error_log("Found variant: " . $variant['product_name'] . " (Size: " . ($variant['size'] ?? 'Default') . ")");
-
-            // Lấy hoặc tạo giỏ hàng
+            // Lấy hoặc tạo giỏ hàng - SỬ DỤNG MODEL
             $cart = $this->cartModel->getCartByCustomerId($this->customer_id);
             if (!$cart) {
                 error_log("Creating new cart for customer: " . $this->customer_id);
@@ -184,7 +179,7 @@ class CartController {
                 error_log("Using existing cart: " . $cart_id);
             }
 
-            // Thêm vào giỏ hàng
+            // Thêm vào giỏ hàng - SỬ DỤNG MODEL
             error_log("Adding to cart - Cart: $cart_id, Variant: $variant_id, Quantity: $quantity");
             $result = $this->cartModel->addToCart($cart_id, $variant_id, $quantity);
 
@@ -208,7 +203,12 @@ class CartController {
         }
     }
 
-    // THÊM: Phương thức kiểm tra tồn kho
+    // Phương thức helper để lấy thông tin variant 
+    private function getVariantWithProduct($variant_id) {
+        return $this->cartModel->getVariantWithProduct($variant_id);
+    }
+
+    // Phương thức kiểm tra tồn kho - SỬ DỤNG MODEL
     public function checkStock($variant_id, $quantity) {
         try {
             $stockCheck = $this->cartModel->checkStock($variant_id, $quantity);
@@ -227,7 +227,7 @@ class CartController {
         }
     }
 
-    // Các phương thức khác giữ nguyên...
+    // Các phương thức khác - ĐÃ SỬA ĐỂ SỬ DỤNG MODEL
     public function getCartItemCount() {
         if (!$this->customer_id) return 0;
         
