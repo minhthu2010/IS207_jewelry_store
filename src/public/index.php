@@ -1,6 +1,4 @@
 <?php
-// public/index.php
-
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start();
@@ -27,6 +25,35 @@ switch ($action) {
         require_once __DIR__ . '/../app/controllers/cartController.php';
         $controller = new CartController($conn);
         $controller->viewCart();
+        break;
+    
+    case 'process_checkout':
+        require_once __DIR__ . '/../app/controllers/cartController.php';
+        $controller = new CartController($conn);
+        $controller->processCheckout();
+        break;
+        
+    case 'checkout':
+        require_once __DIR__ . '/../app/controllers/checkoutController.php';
+        $controller = new CheckoutController($conn);
+        $controller->index();
+        break;
+        
+    case 'checkout/process':
+        require_once __DIR__ . '/../app/controllers/checkoutController.php';
+        $controller = new CheckoutController($conn);
+        $controller->processOrder();
+        break;
+    
+    case 'update_cart_quantity':
+        require_once __DIR__ . '/../app/controllers/cartController.php';
+        $controller = new CartController($conn);
+        $item_id = $_POST['item_id'] ?? null;
+        $quantity = $_POST['quantity'] ?? 1;
+        if ($item_id) {
+            $result = $controller->updateCartItem($item_id, $quantity);
+            echo json_encode(['success' => $result]);
+        }
         break;
         
     case 'login':
