@@ -41,6 +41,18 @@ try {
     exit;
 }
 
+// XỬ LÝ CHECKOUT (FORM SUBMIT)
+if (isset($_POST['action']) && $_POST['action'] === 'checkout') {
+    try {
+        $controller = new CartController($conn);
+        $controller->processCheckout();
+    } catch (Exception $e) {
+        $_SESSION['error'] = 'Checkout error: ' . $e->getMessage();
+        header("Location: /Web_vscode/index.php?action=cart");
+        exit;
+    }
+}
+
 // CHỈ XỬ LÝ AJAX KHI CÓ ACTION
 if (isset($_POST['action'])) {
     try {
@@ -73,6 +85,14 @@ if (isset($_POST['action'])) {
                     $response = ['success' => $result];
                 }
                 break;
+
+            case 'check_stock': // THÊM: Kiểm tra tồn kho
+                $variant_id = $_POST['variant_id'] ?? null;
+                $quantity = $_POST['quantity'] ?? 1;
+                if ($variant_id) {
+                    $response = $controller->checkStock($variant_id, $quantity);
+                }
+                break;
                 
             default:
                 throw new Exception('Unknown action: ' . $_POST['action']);
@@ -91,7 +111,7 @@ if (isset($_POST['action'])) {
     exit;
 }
 
-// ========== CLASS DEFINITION ==========
+// CLASS DEFINITION 
 class CartController {
     private $cartModel;
     private $customer_id;
@@ -99,86 +119,115 @@ class CartController {
 
     public function __construct($db) {
         $this->conn = $db;
-        $this->cartModel = new CartModel($db);  // CartModel class đã được require
+        $this->cartModel = new CartModel($db);
         $this->customer_id = $_SESSION['customer']['cus_id'] ?? null;
     }
 
     public function addToCart() {
-    if (!$this->customer_id) {
-        return ['success' => false, 'message' => 'Please login to add to cart'];
-    }
-
-    $variant_id = $_POST['variant_id'] ?? null;
-    $quantity = $_POST['quantity'] ?? 1;
-
-    // DEBUG CHI TIẾT
-    error_log("=== ADD TO CART ===");
-    error_log("Customer ID: " . $this->customer_id);
-    error_log("Variant ID from POST: " . $variant_id);
-    error_log("Quantity: " . $quantity);
-
-    if (!$variant_id || $variant_id == 0) {
-        error_log("❌ ERROR: Missing variant_id");
-        return ['success' => false, 'message' => 'Missing product information (variant_id: ' . $variant_id . ')'];
-    }
-
-    try {
-        // Kiểm tra variant tồn tại và lấy thông tin
-        $stmt = $this->conn->prepare("
-            SELECT pv.*, p.name as product_name 
-            FROM product_variant pv 
-            JOIN product p ON pv.product_id = p.pro_id 
-            WHERE pv.variant_id = ?
-        ");
-        $stmt->execute([$variant_id]);
-        $variant = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$variant) {
-            error_log("❌ ERROR: Variant not found - ID: " . $variant_id);
-            return ['success' => false, 'message' => 'Product variant not found (ID: ' . $variant_id . ')'];
+        if (!$this->customer_id) {
+            return ['success' => false, 'message' => 'Vui lòng đăng nhập để thêm vào giỏ hàng'];
         }
 
-        error_log("✅ Found variant: " . $variant['product_name'] . " (Size: " . ($variant['size'] ?? 'Default') . ")");
+        $variant_id = $_POST['variant_id'] ?? null;
+        $quantity = $_POST['quantity'] ?? 1;
 
-        // Lấy hoặc tạo giỏ hàng
-        $cart = $this->cartModel->getCartByCustomerId($this->customer_id);
-        if (!$cart) {
-            error_log("Creating new cart for customer: " . $this->customer_id);
-            $cart_id = $this->cartModel->createCart($this->customer_id);
-            if (!$cart_id) {
-                error_log("❌ ERROR: Cannot create cart");
-                return ['success' => false, 'message' => 'Cannot create cart'];
-            }
-            error_log("✅ New cart created: " . $cart_id);
-        } else {
-            $cart_id = $cart['cart_id'];
-            error_log("Using existing cart: " . $cart_id);
+        // DEBUG CHI TIẾT
+        error_log("=== ADD TO CART ===");
+        error_log("Customer ID: " . $this->customer_id);
+        error_log("Variant ID from POST: " . $variant_id);
+        error_log("Quantity: " . $quantity);
+
+        if (!$variant_id || $variant_id == 0) {
+            error_log("ERROR: Missing variant_id");
+            return ['success' => false, 'message' => 'Thiếu thông tin sản phẩm'];
         }
 
-        // Thêm vào giỏ hàng
-        error_log("Adding to cart - Cart: $cart_id, Variant: $variant_id, Quantity: $quantity");
-        $result = $this->cartModel->addToCart($cart_id, $variant_id, $quantity);
-
-        if ($result) {
-            $itemCount = $this->cartModel->getCartItemCount($cart_id);
-            error_log("✅ Successfully added to cart. Item count: " . $itemCount);
+        try {
+            // Kiểm tra variant tồn tại và lấy thông tin
+            $stmt = $this->conn->prepare("
+                SELECT pv.*, p.name as product_name 
+                FROM product_variant pv 
+                JOIN product p ON pv.product_id = p.pro_id 
+                WHERE pv.variant_id = ?
+            ");
+            $stmt->execute([$variant_id]);
+            $variant = $stmt->fetch(PDO::FETCH_ASSOC);
             
+            if (!$variant) {
+                error_log("ERROR: Variant not found - ID: " . $variant_id);
+                return ['success' => false, 'message' => 'Sản phẩm không tồn tại'];
+            }
+
+            // KIỂM TRA TỒN KHO TRƯỚC KHI THÊM
+            $stockCheck = $this->cartModel->checkStock($variant_id, $quantity);
+            if (!$stockCheck['available']) {
+                return [
+                    'success' => false, 
+                    'message' => 'Số lượng tồn kho không đủ. Chỉ còn ' . $stockCheck['current_stock'] . ' sản phẩm'
+                ];
+            }
+
+            error_log("Found variant: " . $variant['product_name'] . " (Size: " . ($variant['size'] ?? 'Default') . ")");
+
+            // Lấy hoặc tạo giỏ hàng
+            $cart = $this->cartModel->getCartByCustomerId($this->customer_id);
+            if (!$cart) {
+                error_log("Creating new cart for customer: " . $this->customer_id);
+                $cart_id = $this->cartModel->createCart($this->customer_id);
+                if (!$cart_id) {
+                    error_log("ERROR: Cannot create cart");
+                    return ['success' => false, 'message' => 'Không thể tạo giỏ hàng'];
+                }
+                error_log("New cart created: " . $cart_id);
+            } else {
+                $cart_id = $cart['cart_id'];
+                error_log("Using existing cart: " . $cart_id);
+            }
+
+            // Thêm vào giỏ hàng
+            error_log("Adding to cart - Cart: $cart_id, Variant: $variant_id, Quantity: $quantity");
+            $result = $this->cartModel->addToCart($cart_id, $variant_id, $quantity);
+
+            if ($result) {
+                $itemCount = $this->cartModel->getCartItemCount($cart_id);
+                error_log("Successfully added to cart. Item count: " . $itemCount);
+                
+                return [
+                    'success' => true,
+                    'message' => 'Đã thêm ' . $variant['product_name'] . ' vào giỏ hàng!',
+                    'itemCount' => $itemCount
+                ];
+            } else {
+                error_log("ERROR: Failed to add to cart");
+                return ['success' => false, 'message' => 'Không thể thêm sản phẩm vào giỏ hàng'];
+            }
+
+        } catch (Exception $e) {
+            error_log("EXCEPTION: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Lỗi cơ sở dữ liệu: ' . $e->getMessage()];
+        }
+    }
+
+    // THÊM: Phương thức kiểm tra tồn kho
+    public function checkStock($variant_id, $quantity) {
+        try {
+            $stockCheck = $this->cartModel->checkStock($variant_id, $quantity);
             return [
                 'success' => true,
-                'message' => 'Added ' . $variant['product_name'] . ' to cart!',
-                'itemCount' => $itemCount
+                'available' => $stockCheck['available'],
+                'current_stock' => $stockCheck['current_stock'],
+                'requested_quantity' => $quantity
             ];
-        } else {
-            error_log("❌ ERROR: Failed to add to cart");
-            return ['success' => false, 'message' => 'Failed to add product to cart'];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'available' => false,
+                'message' => 'Lỗi kiểm tra tồn kho'
+            ];
         }
-
-    } catch (Exception $e) {
-        error_log("❌ EXCEPTION: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
     }
-}
 
+    // Các phương thức khác giữ nguyên...
     public function getCartItemCount() {
         if (!$this->customer_id) return 0;
         
@@ -216,23 +265,26 @@ class CartController {
         include __DIR__ . '/../views/cart.php';
     }
 
-    public function updateCart() {
-    if ($_POST['action'] == 'checkout') {
+    public function processCheckout() {
+        if (!$this->customer_id) {
+            $_SESSION['error'] = "Vui lòng đăng nhập để thanh toán";
+            header("Location: index.php?action=login");
+            exit;
+        }
+
         $selectedItems = $_POST['selected_items'] ?? [];
         
         if (empty($selectedItems)) {
-            $_SESSION['error'] = "Please select at least one item to checkout";
-            header("Location: /cart");
+            $_SESSION['error'] = "Vui lòng chọn ít nhất một sản phẩm để thanh toán";
+            header("Location: index.php?action=cart");
             exit;
         }
         
         // Lưu selected items vào session để xử lý thanh toán
         $_SESSION['checkout_items'] = $selectedItems;
         
-        // Chuyển hướng đến trang thanh toán
-        header("Location: checkout.php");
+        header("Location: index.php?action=checkout");
         exit;
     }
-}
 }
 ?>
