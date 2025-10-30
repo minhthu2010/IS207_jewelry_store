@@ -1,4 +1,6 @@
 <?php
+// public/index.php
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 session_start();
@@ -20,8 +22,8 @@ switch ($action) {
         $id = $_GET['id'] ?? 0;
         $controller->detail($id);
         break;
-        
-    case 'cart':  // THÊM CASE NÀY
+    
+    case 'cart': 
         require_once __DIR__ . '/../app/controllers/cartController.php';
         $controller = new CartController($conn);
         $controller->viewCart();
@@ -55,7 +57,15 @@ switch ($action) {
             echo json_encode(['success' => $result]);
         }
         break;
-        
+    case 'remove_cart_item':
+        require_once __DIR__ . '/../app/controllers/cartController.php';
+        $controller = new CartController($conn);
+        $item_id = $_POST['item_id'] ?? null;
+        if ($item_id) {
+            $result = $controller->removeCartItem($item_id);
+            echo json_encode(['success' => $result]);
+        }
+        break;
     case 'login':
         require_once __DIR__ . '/../app/controllers/loginController.php';
         $controller = new LoginController($conn);
