@@ -387,3 +387,116 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+
+/* Đảm bảo input readonly và disabled không thể nhập */
+.form-group input[readonly],
+.form-group input[disabled] {
+    background-color: #f9f9f9 !important;
+    cursor: not-allowed !important;
+    border-color: #e0e0e0 !important;
+    color: #666 !important;
+    pointer-events: none !important;
+    opacity: 0.8 !important;
+}
+
+.form-group input:not([readonly]):not([disabled]) {
+    background-color: white !important;
+    cursor: text !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+}
+
+/* QUAN TRỌNG: Control button visibility with CSS classes */
+
+/* Trạng thái ban đầu - CHỈ HIỆN 2 NÚT ĐẦU */
+#editInfoBtn, 
+#changePasswordBtn {
+    display: inline-block !important;
+}
+
+#saveInfoBtn, 
+#cancelEditBtn {
+    display: none !important;
+}
+
+/* Khi đang ở chế độ chỉnh sửa - HIỆN 2 NÚT SAU */
+body.editing-mode #editInfoBtn,
+body.editing-mode #changePasswordBtn {
+    display: none !important;
+}
+
+body.editing-mode #saveInfoBtn,
+body.editing-mode #cancelEditBtn {
+    display: inline-block !important;
+}
+
+/* Đảm bảo input readonly không thể nhập */
+.form-group input[readonly] {
+    background-color: #f9f9f9 !important;
+    cursor: not-allowed !important;
+    border-color: #e0e0e0 !important;
+    color: #666 !important;
+    pointer-events: none !important;
+}
+
+.form-group input:not([readonly]) {
+    background-color: white !important;
+    cursor: text !important;
+    pointer-events: auto !important;
+    border-color: #081c58 !important;
+}
+
+/* Ẩn success message ban đầu */
+.success-message {
+    display: none;
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border: 1px solid #c3e6cb;
+}
+
+/* Đảm bảo các nút trong btn-group hiển thị đúng */
+.btn-group .btn {
+    display: inline-block;
+}
+
+
+.message {
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.message.error {
+    color: #b71c1c;          /* đỏ chữ */
+    background-color: #ffcdd2; /* nền đỏ nhạt */
+}
+
+.message.success {
+    color: #1b5e20;          /* xanh chữ */
+    background-color: #c8e6c9; /* nền xanh nhạt */
+}
+
+
+.password-message {
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.password-message.error {
+    color: #b71c1c;
+    background-color: #ffcdd2;
+}
+
+.password-message.success {
+    color: #1b5e20;
+    background-color: #c8e6c9;
+}
