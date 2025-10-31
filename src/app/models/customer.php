@@ -103,5 +103,39 @@ class Customer {
         }
         return false;
     }
+
+    public function updateInfo() {
+    $query = "UPDATE " . $this->table_name . "
+              SET fullname = :fullname,
+                  phone = :phone,
+                  email = :email,
+                  address = :address,
+                  updated_at = NOW()
+              WHERE cus_id = :cus_id";
+    
+    $stmt = $this->conn->prepare($query);
+
+    // Lọc dữ liệu
+    $this->fullname = htmlspecialchars(strip_tags($this->fullname));
+    $this->phone = htmlspecialchars(strip_tags($this->phone));
+    $this->email = htmlspecialchars(strip_tags($this->email));
+    $this->address = htmlspecialchars(strip_tags($this->address));
+
+    // Gán giá trị
+    $stmt->bindParam(':fullname', $this->fullname);
+    $stmt->bindParam(':phone', $this->phone);
+    $stmt->bindParam(':email', $this->email);
+    $stmt->bindParam(':address', $this->address);
+    $stmt->bindParam(':cus_id', $this->cus_id);
+
+    if ($stmt->execute()) {
+        return true;
+    }
+    return false;
 }
+
+}
+
+// Cập nhật thông tin khách hàng
+
 ?>
