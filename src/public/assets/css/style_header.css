@@ -1,3 +1,4 @@
+
 /* xử lý đăng nhập header */
 .user-menu {
   position: relative;
@@ -31,24 +32,106 @@
   left: 0;
   background: white;
   border: 1px solid #ddd;
-  border-radius: 0; /* bỏ bo tròn */
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: none;
-  min-width: 140px;
+  min-width: 120px;
   padding: 5px 0;
   z-index: 1000;
-  text-align: left; /* căn lề trái */
 }
 
-.dropdown-menu a {
+.dropdown-menu a.logout {
   display: block;
-  color: #000; /* tất cả chữ màu đen */
-  text-decoration: none;
+  color: #000;
+  text-decoration: underline;
   padding: 8px 15px;
   font-size: 14px;
 }
 
-.dropdown-menu a:hover {
+.dropdown-menu a.logout:hover {
   background-color: #f3f3f3;
-  text-decoration: underline; /* gạch chân khi chọn */
+}
+
+/* Cart styles */
+.cart {
+    position: relative;
+}
+
+.cart-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.cart-link:hover {
+    color: #007bff;
+}
+
+.count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* User menu styles */
+.user-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.user-name {
+    font-size: 14px;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    min-width: 120px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.dropdown-menu .logout {
+    color: #dc3545;
+    text-decoration: none;
+    display: block;
+    padding: 4px 8px;
+}
+
+.dropdown-menu .logout:hover {
+    background: #f8f9fa;
 }
