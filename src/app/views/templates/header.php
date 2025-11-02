@@ -1,12 +1,3 @@
-<?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-if (!isset($base_url)) {
-    $base_url = '/jewelry_website';
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,14 +34,13 @@ if (!isset($base_url)) {
         $firstLetter = strtoupper(substr($fullname, 0, 1));
     ?>
     <div class="user-menu">
-      <div class="avatar" id="avatar"><?php echo $firstLetter; ?></div>
+        <div class="avatar" id="avatar"><?php echo $firstLetter; ?></div>
         <span class="user-name"><?php echo htmlspecialchars($fullname); ?></span>
-      <div class="dropdown-menu" id="dropdown-menu">
-          <a href="#" id="logoutBtn" class="logout">Log Out</a>
-          <a href="<?php echo $base_url; ?>/public/account.php" class="active">Hồ sơ khách hàng</a>
-      </div>
-</div>
-
+        <div class="dropdown-menu" id="dropdown-menu">
+            <a href="<?php echo $base_url; ?>/public/account.php" class="active">Hồ sơ khách hàng</a>
+            <a href="#" id="logoutBtn" class="logout">Log Out</a>        
+        </div>
+    </div>
 <?php else: ?>
     <a href="login.php" class="login" id="loginLink">Log In</a>
 <?php endif; ?>
