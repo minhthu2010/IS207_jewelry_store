@@ -1,10 +1,5 @@
 <?php include __DIR__ . '/templates/header.php'; ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset = UTF-8>
-</head>
-<body>
+<link rel="stylesheet" href="../public/assets/css/style_home.css">
 <section class="hero-section py-5" style="background-color: #fbefdbff;">
   <div class="container-fluid px-0">
     <div class="row g-0 align-items-center">
@@ -24,7 +19,7 @@
             Shine with timeless grace. 
             Shop timeless jewelry pieces curated just for you!
           </p>
-          <a href="?page=shop" class="btn btn-outline-dark px-4 py-2">Shop Now</a>
+          <a href="index.php?action=list" class="btn btn-outline-dark px-4 py-2">Shop Now</a>
         </div>
       </div>
     </div>
@@ -34,14 +29,15 @@
 
 <!-- CATEGORY SECTION -->
     <section class="py-5" style="background-color: #fbefdbff;">
-        <div class="container">
+        <div class="container text-center">
+            <h3 class="fw-bold mb-5">Categories</h3>
             <div class="row g-4 text-center">
                 <?php
                 $categories = [
-                    ['name' => 'Rings', 'image' => 'assets/images/rings_home.jpg'],
-                    ['name' => 'Earrings', 'image' => 'assets/images/rings_home.jpg'],
-                    ['name' => 'Necklaces', 'image' => 'assets/images/necklaces_home.jpg'],
-                    ['name' => 'Bracelets', 'image' => 'assets/images/necklaces_home.jpg'],
+                    ['name' => 'Nhẫn', 'image' => 'assets/images/rings_home.jpg'],
+                    ['name' => 'Bông tai', 'image' => 'assets/images/rings_home.jpg'],
+                    ['name' => 'Dây chuyền', 'image' => 'assets/images/necklaces_home.jpg'],
+                    ['name' => 'Vòng tay', 'image' => 'assets/images/necklaces_home.jpg'],
                 ];
 
                 foreach ($categories as $cat) {
@@ -113,6 +109,4 @@
         </div>
     </section>
 
-</body>
-</html>
 <?php include __DIR__ . '/templates/footer.php'; ?>
