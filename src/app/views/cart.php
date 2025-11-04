@@ -13,6 +13,7 @@ if (isset($_SESSION['error'])) {
 
 <link rel="stylesheet" href="../public/assets/css/style_cart.css">
 
+
 <div class="container py-5 cart-container">
   <div class="row g-5">
     <!-- Giỏ hàng -->
@@ -34,8 +35,10 @@ if (isset($_SESSION['error'])) {
               $itemTotal = $item['price'] * $item['quantity'];
               $total += $itemTotal;
               
-              // Lấy ảnh sản phẩm
-              $productImage = !empty($item['product_image']) ? $item['product_image'] : '/Web_vscode/public/assets/images/no-image.jpg';
+              // Lấy ảnh sản phẩm - SỬA ĐƯỜNG DẪN ẢNH
+              $productImage = !empty($item['product_image']) ? 
+                  $base_url . 'assets/images/products/' . basename($item['product_image']) : 
+                  $base_url . 'assets/images/no-image.jpg';
           ?>
             <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-3" data-item-id="<?= $item['id'] ?>"
               style="background-color: transparent !important; transition: none !important;">
@@ -54,7 +57,7 @@ if (isset($_SESSION['error'])) {
                      alt="<?= htmlspecialchars($item['product_name']) ?>" 
                      class="cart-img me-3"
                      style="width: 80px; height: 80px; object-fit: cover;"
-                     onerror="this.src='/Web_vscode/public/assets/images/no-image.jpg'">
+                     onerror="this.src='<?= $base_url ?>assets/images/no-image.jpg'">
 
                 <div>
                   <h6 class="fw-bold mb-1"><?= htmlspecialchars($item['product_name']) ?></h6>
