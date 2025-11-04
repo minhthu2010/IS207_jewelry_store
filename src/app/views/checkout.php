@@ -96,9 +96,14 @@ include __DIR__ . '/templates/header.php';
                                     <div class="product-info">
                                         <div class="product-image">
                                             <?php if (!empty($item['image_url'])): ?>
-                                                <img src="<?php echo htmlspecialchars($item['image_url']); ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
+                                                <!-- SỬA ĐƯỜNG DẪN ẢNH SẢN PHẨM -->
+                                                <img src="<?= $base_url . 'assets/images/products/' . basename($item['image_url']) ?>" 
+                                                     alt="<?php echo htmlspecialchars($item['product_name']); ?>"
+                                                     onerror="this.src='<?= $base_url ?>assets/images/no-image.jpg'">
                                             <?php else: ?>
-                                                <div class="no-image">Hình ảnh</div>
+                                                <!-- SỬA ĐƯỜNG DẪN ẢNH MẶC ĐỊNH -->
+                                                <img src="<?= $base_url ?>assets/images/no-image.jpg" 
+                                                     alt="No image">
                                             <?php endif; ?>
                                         </div>
                                         <div>
@@ -167,7 +172,9 @@ include __DIR__ . '/templates/header.php';
                 
                 <!-- QR Code -->
                 <div class="qr-code-modal">
-                    <img id="qr-code-modal-image" src="" alt="QR Code">
+                    <!-- SỬA: Thêm base URL cho QR code nếu cần -->
+                    <img id="qr-code-modal-image" src="" alt="QR Code"
+                         onerror="console.log('Lỗi tải QR code')">
                 </div>
                 
                 <!-- Thông tin chuyển khoản -->
@@ -331,7 +338,11 @@ function placeOrder() {
             // Nếu thanh toán ngân hàng, hiển thị QR code
             if (data.transaction_data && paymentMethod === 'bank') {
                 console.log('Hiển thị QR code');
-                document.getElementById('qr-code-modal-image').src = data.transaction_data.qr_code;
+                // SỬA: Thêm base URL cho QR code nếu cần
+                const qrCodeSrc = data.transaction_data.qr_code.startsWith('http') 
+                    ? data.transaction_data.qr_code 
+                    : '<?= $base_url ?>' + data.transaction_data.qr_code;
+                document.getElementById('qr-code-modal-image').src = qrCodeSrc;
                 document.getElementById('qr-amount').textContent = data.transaction_data.amount;
                 document.getElementById('qr-order-id').textContent = data.order_id;
                 bankPaymentInfo.style.display = 'block';
