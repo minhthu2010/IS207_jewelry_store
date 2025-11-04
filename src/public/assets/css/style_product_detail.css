@@ -1,0 +1,118 @@
+.product-container {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 30px;
+}
+
+.product-image {
+  border-radius: 6px;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+.product-info h3 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.length-select {
+  max-width: 300px;
+}
+
+.quantity-group {
+  max-width: 140px;
+}
+
+/* Thêm vào file style.css của bạn */
+.size-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.size-option {
+    padding: 8px 16px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.size-option:hover {
+    border-color: #000;
+    background: #f8f9fa;
+}
+
+.size-option.active {
+    border-color: #000;
+    background: #000;
+    color: white;
+}
+
+.product-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 30px;
+}
+
+.product-image {
+  border-radius: 6px;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+.product-info h3 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.length-select {
+  max-width: 300px;
+}
+
+.quantity-group {
+  max-width: 140px;
+}
+
+.add-to-cart {
+  border-width: 2px;
+  transition: all 0.3s ease;
+}
+
+.add-to-cart:hover {
+  background-color: #2c2b29;
+  color: white;
+}
+
+/* Social icons */
+.social-icons a {
+  font-size: 1.3rem;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.social-icons a:hover {
+  color: #d4af37;
+}
+
+/* Review box */
+.review-box {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.rating-star {
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.rating-star.fas,
+.rating-star:hover {
+  color: #f2b01e;
+}
