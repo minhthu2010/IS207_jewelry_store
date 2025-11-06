@@ -37,7 +37,7 @@
         <div class="avatar" id="avatar"><?php echo $firstLetter; ?></div>
         <span class="user-name"><?php echo htmlspecialchars($fullname); ?></span>
         <div class="dropdown-menu" id="dropdown-menu">
-            <a href="<?php echo $base_url; ?>/public/account.php" class="active">Hồ sơ khách hàng</a>
+            <a href="account.php" class="active">Hồ sơ khách hàng</a>
             <a href="#" id="logoutBtn" class="logout">Log Out</a>        
         </div>
     </div>
