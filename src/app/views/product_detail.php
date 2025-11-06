@@ -189,37 +189,102 @@ if (!empty($product['variants'])) {
     </div>
   </div>
 
-  <!-- Reviews Section -->
-  <hr class="my-5">
-  <div class="row">
+<!-- Reviews Section -->
+<hr class="my-5">
+<div class="row">
     <div class="col-12">
-      <h4 class="mb-4">Đánh giá sản phẩm</h4>
-      
-      <?php if (!empty($product['reviews'])): ?>
-        <?php foreach ($product['reviews'] as $review): ?>
-          <div class="review-box mb-4 p-4 border rounded">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <strong class="d-block"><?= htmlspecialchars($review['fullname']) ?></strong>
-                <div class="text-warning mb-2">
-                  <?php for ($i = 1; $i <= 5; $i++): ?>
-                    <i class="<?= $i <= $review['rating'] ? 'fas' : 'far' ?> fa-star"></i>
-                  <?php endfor; ?>
+        <h4 class="mb-4">Đánh giá sản phẩm</h4>
+        
+        <!-- Phần viết đánh giá -->
+        <div id="writeReviewSection" class="write-review-section" style="display: none;">
+            <h5>Viết đánh giá của bạn</h5>
+            <form id="reviewForm">
+                <input type="hidden" id="reviewProductId" value="<?= $product['pro_id'] ?>">
+                
+                <div class="form-group">
+                    <label class="fw-bold">Đánh giá của bạn:</label>
+                    <div class="rating-stars" id="ratingStars">
+                        <span class="rating-star" data-rating="1">★</span>
+                        <span class="rating-star" data-rating="2">★</span>
+                        <span class="rating-star" data-rating="3">★</span>
+                        <span class="rating-star" data-rating="4">★</span>
+                        <span class="rating-star" data-rating="5">★</span>
+                    </div>
+                    <input type="hidden" id="selectedRating" name="rating" required>
                 </div>
-              </div>
-              <small class="text-muted"><?= date("d/m/Y H:i", strtotime($review['created_at'])) ?></small>
-            </div>
-            <p class="mb-0"><?= nl2br(htmlspecialchars($review['comment'] ?? '')) ?></p>
-          </div>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <div class="text-center py-4">
-          <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
-          <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                
+                <div class="form-group">
+                    <label for="reviewComment" class="fw-bold">Nhận xét:</label>
+                    <textarea id="reviewComment" name="comment" class="review-textarea" 
+                              placeholder="Chia sẻ cảm nhận của bạn về sản phẩm... (không bắt buộc)"></textarea>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn write-review-btn" id="submitReviewBtn">
+                        Gửi đánh giá
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancelReviewBtn">
+                        Hủy
+                    </button>
+                </div>
+            </form>
         </div>
-      <?php endif; ?>
+
+        <!-- Hiển thị đánh giá của người dùng nếu đã review -->
+        <div id="userReviewSection" style="display: none;">
+            <h5>Đánh giá của bạn</h5>
+            <div id="userReviewContent"></div>
+        </div>
+
+        <!-- Danh sách đánh giá -->
+        <div id="reviewsContainer">
+            <?php if (!empty($product['reviews'])): ?>
+                <?php foreach ($product['reviews'] as $review): ?>
+                    <div class="review-box mb-4 p-4 border rounded">
+                        <div class="review-header">
+                            <div>
+                                <strong class="review-author d-block">
+                                    <?= htmlspecialchars($review['fullname']) ?>
+                                    <?php if ($review['customer_id'] == ($_SESSION['customer']['cus_id'] ?? 0)): ?>
+                                        <span class="user-review-badge">Đánh giá của bạn</span>
+                                    <?php endif; ?>
+                                </strong>
+                                <div class="review-rating">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <i class="<?= $i <= $review['rating'] ? 'fas' : 'far' ?> fa-star"></i>
+                                    <?php endfor; ?>
+                                </div>
+                            </div>
+                            <small class="review-date"><?= date("d/m/Y H:i", strtotime($review['created_at'])) ?></small>
+                        </div>
+                        <p class="review-comment mb-0"><?= nl2br(htmlspecialchars($review['comment'] ?? '')) ?></p>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="no-reviews">
+                    <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Nút viết đánh giá -->
+        <div class="text-center mt-4" id="reviewActionSection">
+            <?php if (isset($_SESSION['customer'])): ?>
+                <button id="checkReviewBtn" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>Viết đánh giá
+                </button>
+            <?php else: ?>
+                <div class="review-login-prompt">
+                    <p class="mb-3">Đăng nhập để viết đánh giá sản phẩm</p>
+                    <a href="<?= $base_url ?>login.php" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
-  </div>
+</div>
 </div>
 
 <script>
@@ -227,12 +292,6 @@ if (!empty($product['variants'])) {
 let currentVariantId = <?= $defaultVariantId ?>;
 let currentQuantity = 1;
 let maxStock = <?= $defaultStock ?>;
-
-console.log('Auto-selected variant:', {
-    variantId: currentVariantId,
-    price: <?= $defaultPrice ?>,
-    stock: <?= $defaultStock ?>
-});
 
 // Hàm thay đổi ảnh chính
 function changeMainImage(thumbElement, imageUrl) {
@@ -290,12 +349,6 @@ function selectSize(element) {
         document.getElementById('quantity').value = maxStock > 0 ? 1 : 0;
         currentQuantity = maxStock > 0 ? 1 : 0;
     }
-    
-    console.log('Selected size:', {
-        variantId: currentVariantId,
-        price: newPrice,
-        stock: maxStock
-    });
 }
 
 // Xử lý số lượng
@@ -338,7 +391,6 @@ document.getElementById('quantity')?.addEventListener('change', function() {
 });
 
 // Hàm thêm vào giỏ hàng
-// Hàm thêm vào giỏ hàng
 async function addToCart() {
     const button = document.querySelector('.add-to-cart-btn');
     const originalText = button.innerHTML;
@@ -374,18 +426,15 @@ async function addToCart() {
         const data = await response.json();
         
         if (data.success) {
-            // SỬA: Thay showMessage bằng showCartMessage
             showCartMessage(data.message, true);
             if (data.itemCount !== undefined) {
                 updateCartCount(data.itemCount);
             }
         } else {
-            // SỬA: Thay showMessage bằng showCartMessage
             showCartMessage(data.message, false);
         }
         
     } catch (error) {
-        // SỬA: Thay showMessage bằng showCartMessage
         showCartMessage('Lỗi: ' + error.message, false);
     } finally {
         button.innerHTML = originalText;
@@ -419,11 +468,218 @@ function updateCartCount(count) {
     }
 }
 
-// Khởi tạo khi trang load
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Product detail page loaded');
+    // Thêm event listener cho nút kiểm tra review
+    const checkReviewBtn = document.getElementById('checkReviewBtn');
+    if (checkReviewBtn) {
+        checkReviewBtn.addEventListener('click', checkReviewEligibility);
+    }
+    
+    // Thêm event listener cho nút hủy review
+    const cancelReviewBtn = document.getElementById('cancelReviewBtn');
+    if (cancelReviewBtn) {
+        cancelReviewBtn.addEventListener('click', function() {
+            document.getElementById('writeReviewSection').style.display = 'none';
+            document.getElementById('reviewActionSection').style.display = 'block';
+            document.getElementById('userReviewSection').style.display = 'none';
+        });
+    }
+    
+    // Thêm event listener cho form review
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', handleReviewSubmit);
+    }
+    
+    // Khởi tạo rating stars
+    initRatingStars();
 });
+
+/* ========== REVIEW FUNCTIONALITY ========== */
+// Hàm khởi tạo rating stars
+function initRatingStars() {
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            document.getElementById('selectedRating').value = rating;
+            
+            // Update stars display
+            document.querySelectorAll('.rating-star').forEach(s => {
+                const starRating = parseInt(s.dataset.rating);
+                s.classList.toggle('active', starRating <= rating);
+                s.style.color = starRating <= rating ? '#ffc107' : '#ddd';
+            });
+        });
+    });
+}
+
+// Hàm xử lý submit review
+async function handleReviewSubmit(e) {
+    e.preventDefault();
+    
+    const productId = document.getElementById('reviewProductId').value;
+    const rating = document.getElementById('selectedRating').value;
+    const comment = document.getElementById('reviewComment').value.trim();
+    
+    if (!rating) {
+        showReviewMessage('Vui lòng chọn số sao đánh giá', 'error');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submitReviewBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+    submitBtn.disabled = true;
+    
+    try {
+        const response = await fetch('../app/controllers/reviewController.php?action=submit', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ 
+                product_id: parseInt(productId), 
+                rating: parseInt(rating), 
+                comment: comment 
+            })
+        });
+        
+        // Kiểm tra response
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showReviewMessage(data.message, 'success');
+            // Reload trang để hiển thị review mới
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showReviewMessage(data.message, 'error');
+        }
+    } catch (error) {
+        showReviewMessage('Lỗi kết nối khi gửi đánh giá: ' + error.message, 'error');
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Hàm kiểm tra quyền viết đánh giá
+async function checkReviewEligibility() {
+    const productId = <?= $product['pro_id'] ?>;
+    const checkReviewBtn = document.getElementById('checkReviewBtn');
+    
+    // Hiển thị loading
+    const originalText = checkReviewBtn.innerHTML;
+    checkReviewBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...';
+    checkReviewBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`../app/controllers/reviewController.php?action=check_eligibility&product_id=${productId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.hasReviewed) {
+                showUserReview(data.userReview);
+                if (data.message) {
+                    showReviewMessage(data.message, 'info');
+                }
+            } else if (data.canReview) {
+                showReviewForm();
+                if (data.message) {
+                    showReviewMessage('Bạn có thể viết đánh giá cho sản phẩm này', 'success');
+                }
+            } else {
+                showReviewMessage(data.message || 'Bạn cần mua hàng để viết đánh giá', 'info');
+            }
+        } else {
+            showReviewMessage(data.message, 'error');
+        }
+    } catch (error) {
+        showReviewMessage('Lỗi kiểm tra quyền đánh giá: ' + error.message, 'error');
+    } finally {
+        checkReviewBtn.innerHTML = originalText;
+        checkReviewBtn.disabled = false;
+    }
+}
+
+// Hàm hiển thị form viết đánh giá
+function showReviewForm() {
+    document.getElementById('writeReviewSection').style.display = 'block';
+    document.getElementById('reviewActionSection').style.display = 'none';
+    document.getElementById('userReviewSection').style.display = 'none';
+    
+    // Reset form
+    document.getElementById('selectedRating').value = '';
+    document.getElementById('reviewComment').value = '';
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.classList.remove('active');
+        star.style.color = '#ddd';
+    });
+}
+
+// Hàm hiển thị đánh giá của người dùng
+function showUserReview(review) {
+    const userReviewSection = document.getElementById('userReviewSection');
+    const userReviewContent = document.getElementById('userReviewContent');
+    
+    if (!review) {
+        userReviewContent.innerHTML = '<p class="text-muted">Không tìm thấy đánh giá</p>';
+    } else {
+        userReviewContent.innerHTML = `
+            <div class="review-box p-4 border rounded">
+                <div class="review-header d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong class="review-author d-block">
+                            <?= $_SESSION['customer']['fullname'] ?? 'Bạn' ?>
+                            <span class="user-review-badge">Đánh giá của bạn</span>
+                        </strong>
+                        <div class="review-rating text-warning">
+                            ${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}
+                        </div>
+                    </div>
+                    <small class="review-date text-muted">
+                        ${new Date(review.created_at).toLocaleDateString('vi-VN')}
+                    </small>
+                </div>
+                <p class="review-comment mb-0 mt-2">${review.comment || 'Không có nhận xét'}</p>
+            </div>
+        `;
+    }
+    
+    userReviewSection.style.display = 'block';
+    document.getElementById('reviewActionSection').style.display = 'none';
+    document.getElementById('writeReviewSection').style.display = 'none';
+}
+
+// Hiển thị thông báo
+function showReviewMessage(message, type) {
+    // Tạo hoặc cập nhật message element
+    let messageDiv = document.getElementById('reviewMessage');
+    if (!messageDiv) {
+        messageDiv = document.createElement('div');
+        messageDiv.id = 'reviewMessage';
+        document.getElementById('writeReviewSection').prepend(messageDiv);
+    }
+    
+    messageDiv.className = `review-message ${type}`;
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+    
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 5000);
+}
 </script>
 
 <?php include __DIR__ . '/templates/footer.php'; ?>
-
