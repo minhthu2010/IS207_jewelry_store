@@ -1,4 +1,5 @@
 <?php 
+$base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/public/";
 include __DIR__ . '/templates/header.php';
 
 // Hiển thị thông báo lỗi nếu có
@@ -210,6 +211,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Sự kiện input trực tiếp (người dùng nhập số)
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const maxQuantity = parseInt(this.getAttribute('max'));
+            let newQuantity = parseInt(this.value);
+            
+            if (isNaN(newQuantity) || newQuantity < 1) {
+                newQuantity = 1;
+                this.value = 1;
+            }
+            
+            if (newQuantity > maxQuantity) {
+                newQuantity = maxQuantity;
+                this.value = maxQuantity;
+                alert('Số lượng tồn kho không đủ! Chỉ còn ' + maxQuantity + ' sản phẩm.');
+            }
+            
+            updateItemPrice(itemId, newQuantity);
+            updateQuantityInDatabase(itemId, newQuantity);
+        });
+    });
+
     // Sự kiện checkout
     checkoutBtn.addEventListener('click', function() {
         const selectedItems = document.querySelectorAll('.product-checkbox:checked');
@@ -237,14 +261,28 @@ function updateQuantityInDatabase(itemId, newQuantity) {
     })
     .then(response => response.json())
     .then(data => {
-        if (!data.success) {
-            alert('Lỗi cập nhật số lượng');
+        if (data.success) {
+            // Cập nhật số lượng trên icon giỏ hàng
+            updateCartIcon(data.itemCount);
+            console.log('Cập nhật số lượng thành công!');
+        } else {
+            alert('Lỗi cập nhật số lượng: ' + (data.message || 'Lỗi không xác định'));
+            location.reload(); // Reload để khôi phục số lượng cũ
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Lỗi kết nối! Vui lòng thử lại.');
     });
 }
 
 function removeItem(itemId) {
     if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) return;
+
+    const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+    if (itemElement) {
+        itemElement.style.opacity = '0.5';
+    }
 
     fetch('index.php?action=remove_cart_item', {
         method: 'POST',
@@ -256,30 +294,117 @@ function removeItem(itemId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            // Cập nhật số lượng trên icon giỏ hàng
+            updateCartIcon(data.itemCount);
+            
+            // Xóa item khỏi DOM
+            if (itemElement) {
+                itemElement.remove();
+            }
+            
+            console.log('Đã xóa sản phẩm khỏi giỏ hàng!');
+            
+            // Nếu giỏ hàng trống, reload trang
+            if (data.itemCount === 0) {
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
         } else {
-            alert('Lỗi xóa sản phẩm');
+            alert('Lỗi xóa sản phẩm: ' + (data.message || 'Lỗi không xác định'));
+            if (itemElement) {
+                itemElement.style.opacity = '1';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Lỗi kết nối! Vui lòng thử lại.');
+        if (itemElement) {
+            itemElement.style.opacity = '1';
         }
     });
 }
 
+// Hàm cập nhật icon giỏ hàng
+function updateCartIcon(itemCount) {
+    // Cách 1: Gọi hàm từ header (nếu có)
+    if (typeof updateCartCount === 'function') {
+        updateCartCount(itemCount);
+    }
+    
+    // Cách 2: Update trực tiếp
+    const cartCountElement = document.getElementById('cart-count');
+    if (cartCountElement) {
+        cartCountElement.textContent = itemCount;
+        cartCountElement.style.display = itemCount > 0 ? 'flex' : 'none';
+    }
+    
+    // Cách 3: Gọi lại API để chắc chắn
+    fetch('index.php?action=get_cart_count', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=get_cart_count'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && cartCountElement) {
+            cartCountElement.textContent = data.itemCount;
+            cartCountElement.style.display = data.itemCount > 0 ? 'flex' : 'none';
+        }
+    });
+}
 // Hàm cập nhật giá khi thay đổi số lượng
 function updateItemPrice(itemId, quantity) {
     const checkbox = document.querySelector(`.product-checkbox[data-item-id="${itemId}"]`);
-    const unitPrice = parseFloat(document.querySelector(`.quantity-input[data-item-id="${itemId}"]`).getAttribute('data-unit-price'));
-    const totalPrice = unitPrice * quantity;
+    const input = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
     
-    if (checkbox) {
+    if (checkbox && input) {
+        const unitPrice = parseFloat(input.getAttribute('data-unit-price'));
+        const totalPrice = unitPrice * quantity;
+        
         checkbox.setAttribute('data-price', totalPrice);
         document.getElementById(`price-${itemId}`).textContent = formatCurrency(totalPrice);
         
         // Nếu checkbox đang được chọn, tính lại tổng
         if (checkbox.checked) {
-            calculateTotal();
+            initializeCartFunctionality();
         }
     }
 }
 
+// Hàm cập nhật số lượng trên icon giỏ hàng 
+function updateCartIcon(itemCount) {
+    // Cách 1: Gọi hàm từ header (nếu có)
+    if (typeof updateCartCount === 'function') {
+        updateCartCount(itemCount);
+    }
+    
+    // Cách 2: Update trực tiếp
+    const cartCountElement = document.getElementById('cart-count');
+    if (cartCountElement) {
+        cartCountElement.textContent = itemCount;
+        cartCountElement.style.display = itemCount > 0 ? 'flex' : 'none';
+    }
+    
+    // Cách 3: Gọi lại API để chắc chắn
+    fetch('index.php?action=get_cart_count', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=get_cart_count'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && cartCountElement) {
+            cartCountElement.textContent = data.itemCount;
+            cartCountElement.style.display = data.itemCount > 0 ? 'flex' : 'none';
+        }
+    });
+}
 // Định dạng số tiền VNĐ
 function formatCurrency(amount) {
     return amount.toLocaleString('vi-VN') + '₫';
