@@ -195,6 +195,12 @@ if (!empty($product['variants'])) {
     <div class="col-12">
         <h4 class="mb-4">Đánh giá sản phẩm</h4>
         
+        <!-- Thông báo review -->
+        <div id="reviewMessage" class="alert alert-dismissible fade show" style="display: none;">
+            <span id="reviewMessageText"></span>
+            <button type="button" class="btn-close" onclick="closeReviewMessage()"></button>
+        </div>
+        
         <!-- Phần viết đánh giá -->
         <div id="writeReviewSection" class="write-review-section" style="display: none;">
             <h5>Viết đánh giá của bạn</h5>
@@ -482,6 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('writeReviewSection').style.display = 'none';
             document.getElementById('reviewActionSection').style.display = 'block';
             document.getElementById('userReviewSection').style.display = 'none';
+            document.getElementById('reviewMessage').style.display = 'none';
         });
     }
     
@@ -590,17 +597,18 @@ async function checkReviewEligibility() {
         
         if (data.success) {
             if (data.hasReviewed) {
-                showUserReview(data.userReview);
-                if (data.message) {
-                    showReviewMessage(data.message, 'info');
-                }
+                // Đã review rồi -> hiển thị review của user
+                showReviewMessage('Bạn đã đánh giá sản phẩm này trước đây', 'info');
             } else if (data.canReview) {
+                // Có quyền review -> hiển thị form viết review
                 showReviewForm();
-                if (data.message) {
-                    showReviewMessage('Bạn có thể viết đánh giá cho sản phẩm này', 'success');
-                }
             } else {
-                showReviewMessage(data.message || 'Bạn cần mua hàng để viết đánh giá', 'info');
+                // Không đủ quyền review -> chỉ hiển thị thông báo
+                showReviewMessage(data.message || 'Bạn cần mua hàng để viết đánh giá cho sản phẩm này', 'info');
+                // Ẩn các section khác
+                document.getElementById('writeReviewSection').style.display = 'none';
+                document.getElementById('userReviewSection').style.display = 'none';
+                document.getElementById('reviewActionSection').style.display = 'block';
             }
         } else {
             showReviewMessage(data.message, 'error');
@@ -662,23 +670,42 @@ function showUserReview(review) {
     document.getElementById('writeReviewSection').style.display = 'none';
 }
 
-// Hiển thị thông báo
+// Hiển thị thông báo review
 function showReviewMessage(message, type) {
-    // Tạo hoặc cập nhật message element
-    let messageDiv = document.getElementById('reviewMessage');
-    if (!messageDiv) {
-        messageDiv = document.createElement('div');
-        messageDiv.id = 'reviewMessage';
-        document.getElementById('writeReviewSection').prepend(messageDiv);
+    const messageDiv = document.getElementById('reviewMessage');
+    const messageText = document.getElementById('reviewMessageText');
+    
+    if (messageDiv && messageText) {
+        // Set class based on type
+        messageDiv.className = `alert alert-dismissible fade show`;
+        if (type === 'success') {
+            messageDiv.classList.add('alert-success');
+        } else if (type === 'error') {
+            messageDiv.classList.add('alert-danger');
+        } else if (type === 'info') {
+            messageDiv.classList.add('alert-info');
+        } else {
+            messageDiv.classList.add('alert-warning');
+        }
+        
+        messageText.textContent = message;
+        messageDiv.style.display = 'block';
+        
+        // Tự động ẩn sau 5 giây
+        setTimeout(() => {
+            if (messageDiv.style.display !== 'none') {
+                messageDiv.style.display = 'none';
+            }
+        }, 5000);
     }
-    
-    messageDiv.className = `review-message ${type}`;
-    messageDiv.textContent = message;
-    messageDiv.style.display = 'block';
-    
-    setTimeout(() => {
+}
+
+// Đóng thông báo review
+function closeReviewMessage() {
+    const messageDiv = document.getElementById('reviewMessage');
+    if (messageDiv) {
         messageDiv.style.display = 'none';
-    }, 5000);
+    }
 }
 </script>
 
