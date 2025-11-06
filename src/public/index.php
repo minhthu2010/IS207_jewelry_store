@@ -7,9 +7,22 @@ session_start();
 
 require_once __DIR__ . '/../config/config.php';
 
-$action = $_GET['action'] ?? 'list';
+$action = $_GET['action'] ?? 'home';
 
 switch ($action) {
+    case 'home':
+        require_once __DIR__ . '/../app/controllers/HomeController.php';
+        $controller = new HomeController($conn);
+        $data = $controller->index();
+        
+        // Extract data để sử dụng trong view
+        extract($data);
+        
+        // Include view
+        include __DIR__ . '/../app/views/home.php';
+        break;
+
+
     case 'list':
         require_once __DIR__ . '/../app/controllers/productController.php';
         $controller = new productController($conn);
@@ -77,9 +90,12 @@ switch ($action) {
         break;
         
     default:
-        require_once __DIR__ . '/../app/controllers/productController.php';
-        $controller = new productController($conn);
-        $controller->list();
+        require_once __DIR__ . '/../app/controllers/homeController.php';
+        $controller = new HomeController($conn);
+        $data = $controller->index();
+        extract($data);
+        include __DIR__ . '/../app/views/home.php';
         break;
 }
 ?>
+
