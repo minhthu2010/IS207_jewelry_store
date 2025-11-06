@@ -157,8 +157,8 @@ class ProductModel {
         }
     }
 
-    // THÊM METHOD LẤY REVIEWS
-    public function getProductReviews($productId) {
+        // CẬP NHẬT METHOD GETPRODUCTREVIEWS HIỆN TẠI ĐỂ THÊM THÔNG TIN
+    public function getProductReviews($productId, $limit = null) {
         try {
             $query = "
                 SELECT 
@@ -171,8 +171,17 @@ class ProductModel {
                 ORDER BY pr.created_at DESC
             ";
             
+            if ($limit) {
+                $query .= " LIMIT :limit";
+            }
+            
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+            
+            if ($limit) {
+                $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -369,6 +378,195 @@ class ProductModel {
         } catch (PDOException $e) {
             error_log("ProductModel getProductTags Error: " . $e->getMessage());
             return [];
+        }
+    }
+
+// KIỂM TRA XEM KHÁCH HÀNG CÓ THỂ ĐÁNH GIÁ SẢN PHẨM KHÔNG
+public function canCustomerReviewProduct($customerId, $productId) {
+    try {
+        $query = "
+            SELECT od.id 
+            FROM order_detail od 
+            JOIN orders o ON od.order_id = o.order_id 
+            JOIN product_variant pv ON od.variant_id = pv.variant_id
+            WHERE o.customer_id = :customer_id 
+            AND pv.product_id = :product_id 
+            AND o.payment_status = 'success'
+            AND o.status = 3  -- ĐÃ SỬA: status = 3 (Hoàn thành)
+            AND NOT EXISTS (
+                SELECT 1 FROM product_review pr 
+                WHERE pr.customer_id = :customer_id2 
+                AND pr.product_id = :product_id2
+            )
+            LIMIT 1
+        ";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':customer_id' => $customerId,
+            ':product_id' => $productId,
+            ':customer_id2' => $customerId,
+            ':product_id2' => $productId
+        ]);
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // DEBUG
+        error_log("Customer $customerId can review product $productId: " . ($result ? 'Yes' : 'No'));
+        
+        return $result !== false;
+    } catch (PDOException $e) {
+        error_log("ProductModel canCustomerReviewProduct Error: " . $e->getMessage());
+        return false;
+    }
+}
+
+// LẤY ORDER_DETAIL_ID ĐỂ XÁC MINH MUA HÀNG
+public function getOrderDetailForReview($customerId, $productId) {
+    try {
+        $query = "
+            SELECT od.id 
+            FROM order_detail od 
+            JOIN orders o ON od.order_id = o.order_id 
+            JOIN product_variant pv ON od.variant_id = pv.variant_id
+            WHERE o.customer_id = :customer_id 
+            AND pv.product_id = :product_id 
+            AND o.payment_status = 'success'
+            AND o.status = 3  -- ĐÃ SỬA: status = 3 (Hoàn thành)
+            LIMIT 1
+        ";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':customer_id' => $customerId,
+            ':product_id' => $productId
+        ]);
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("ProductModel getOrderDetailForReview Error: " . $e->getMessage());
+        return null;
+    }
+}
+
+// THÊM ĐÁNH GIÁ MỚI - THÊM KIỂM TRA TRÙNG LẶP
+public function addProductReview($data) {
+    try {
+        // Kiểm tra xem đã review chưa
+        $checkQuery = "
+            SELECT review_id FROM product_review 
+            WHERE product_id = :product_id AND customer_id = :customer_id
+        ";
+        $checkStmt = $this->conn->prepare($checkQuery);
+        $checkStmt->execute([
+            ':product_id' => $data[':product_id'],
+            ':customer_id' => $data[':customer_id']
+        ]);
+        
+        if ($checkStmt->fetch()) {
+            error_log("Review already exists for product: " . $data[':product_id'] . ", customer: " . $data[':customer_id']);
+            return false;
+        }
+
+        // Kiểm tra quyền đánh giá trước khi thêm
+        $canReview = $this->canCustomerReviewProduct($data[':customer_id'], $data[':product_id']);
+        if (!$canReview) {
+            error_log("Customer not eligible to review product: " . $data[':product_id'] . ", customer: " . $data[':customer_id']);
+            return false;
+        }
+
+        $query = "
+            INSERT INTO product_review 
+            (product_id, customer_id, order_detail_id, rating, comment) 
+            VALUES (:product_id, :customer_id, :order_detail_id, :rating, :comment)
+        ";
+        
+        $stmt = $this->conn->prepare($query);
+        $success = $stmt->execute($data);
+        
+        if ($success) {
+            error_log("Review added successfully for product: " . $data[':product_id'] . ", customer: " . $data[':customer_id']);
+        } else {
+            error_log("Failed to add review for product: " . $data[':product_id'] . ", customer: " . $data[':customer_id']);
+        }
+        
+        return $success;
+    } catch (PDOException $e) {
+        // Bắt lỗi UNIQUE constraint
+        if (strpos($e->getMessage(), 'unique_review') !== false) {
+            error_log("Duplicate review attempt for product: " . $data[':product_id'] . ", customer: " . $data[':customer_id']);
+            return false;
+        }
+        error_log("ProductModel addProductReview Error: " . $e->getMessage());
+        return false;
+    }
+}
+
+
+// LẤY ĐÁNH GIÁ CỦA KHÁCH HÀNG CHO SẢN PHẨM
+public function getUserReviewForProduct($customerId, $productId) {
+    try {
+        $query = "
+            SELECT pr.*, c.fullname 
+            FROM product_review pr
+            LEFT JOIN customer c ON pr.customer_id = c.cus_id
+            WHERE pr.customer_id = :customer_id 
+            AND pr.product_id = :product_id
+            ORDER BY pr.created_at DESC
+            LIMIT 1
+        ";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':customer_id' => $customerId,
+            ':product_id' => $productId
+        ]);
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("ProductModel getUserReviewForProduct Error: " . $e->getMessage());
+        return null;
+    }
+}
+
+    // TÍNH RATING TRUNG BÌNH VÀ SỐ LƯỢNG REVIEW (CÓ THỂ DÙNG CHO PRODUCT LIST)
+    public function getProductRatingSummary($productId) {
+        try {
+            $query = "
+                SELECT 
+                    COUNT(*) as review_count,
+                    AVG(rating) as average_rating,
+                    COUNT(CASE WHEN rating = 5 THEN 1 END) as rating_5,
+                    COUNT(CASE WHEN rating = 4 THEN 1 END) as rating_4,
+                    COUNT(CASE WHEN rating = 3 THEN 1 END) as rating_3,
+                    COUNT(CASE WHEN rating = 2 THEN 1 END) as rating_2,
+                    COUNT(CASE WHEN rating = 1 THEN 1 END) as rating_1
+                FROM product_review 
+                WHERE product_id = :product_id
+            ";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([':product_id' => $productId]);
+            
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Làm tròn rating trung bình
+            if ($result['average_rating']) {
+                $result['average_rating'] = round($result['average_rating'], 1);
+            }
+            
+            return $result;
+        } catch (PDOException $e) {
+            error_log("ProductModel getProductRatingSummary Error: " . $e->getMessage());
+            return [
+                'review_count' => 0,
+                'average_rating' => 0,
+                'rating_5' => 0,
+                'rating_4' => 0,
+                'rating_3' => 0,
+                'rating_2' => 0,
+                'rating_1' => 0
+            ];
         }
     }
 }
