@@ -50,7 +50,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'checkout') {
         $controller->processCheckout();
     } catch (Exception $e) {
         $_SESSION['error'] = 'Checkout error: ' . $e->getMessage();
-        header("Location: /Web_vscode/index.php?action=cart");
+        header("Location: /jewelry_website/index.php?action=cart");
         exit;
     }
 }
@@ -263,6 +263,54 @@ class CartController {
     public function viewCart() {
         $cartItems = $this->getCart();
         include __DIR__ . '/../views/cart.php';
+    }
+
+    public function handleUpdateQuantity($item_id, $quantity) {
+        if (!$this->customer_id) {
+            return ['success' => false, 'message' => 'Vui lòng đăng nhập'];
+        }
+
+        try {
+            $result = $this->updateCartItem($item_id, $quantity);
+            
+            if ($result) {
+                // Lấy số lượng mới cho icon giỏ hàng
+                $itemCount = $this->getCartItemCount();
+                return [
+                    'success' => true,
+                    'itemCount' => $itemCount,
+                    'message' => 'Cập nhật số lượng thành công'
+                ];
+            } else {
+                return ['success' => false, 'message' => 'Cập nhật thất bại'];
+            }
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()];
+        }
+    }
+
+    public function handleRemoveItem($item_id) {
+        if (!$this->customer_id) {
+            return ['success' => false, 'message' => 'Vui lòng đăng nhập'];
+        }
+
+        try {
+            $result = $this->removeCartItem($item_id);
+            
+            if ($result) {
+                // Lấy số lượng mới cho icon giỏ hàng
+                $itemCount = $this->getCartItemCount();
+                return [
+                    'success' => true,
+                    'itemCount' => $itemCount,
+                    'message' => 'Đã xóa sản phẩm khỏi giỏ hàng'
+                ];
+            } else {
+                return ['success' => false, 'message' => 'Xóa sản phẩm thất bại'];
+            }
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()];
+        }
     }
 
     public function processCheckout() {
