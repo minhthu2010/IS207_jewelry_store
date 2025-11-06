@@ -27,9 +27,6 @@ class ReviewController {
         }
         
         try {
-            // DEBUG: Log thông tin kiểm tra
-            error_log("Checking review eligibility - Customer: $customerId, Product: $productId");
-            
             // Kiểm tra xem đã review chưa
             $userReview = $this->productModel->getUserReviewForProduct($customerId, $productId);
             
@@ -46,10 +43,6 @@ class ReviewController {
             
             // Kiểm tra có thể review không
             $canReview = $this->productModel->canCustomerReviewProduct($customerId, $productId);
-            
-            // DEBUG: Log kết quả
-            error_log("Can Review: " . ($canReview ? 'Yes' : 'No'));
-            error_log("Has Reviewed: " . (!empty($userReview) ? 'Yes' : 'No'));
             
             echo json_encode([
                 'success' => true,
