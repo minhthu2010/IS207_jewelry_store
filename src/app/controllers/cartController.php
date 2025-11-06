@@ -1,12 +1,8 @@
 <?php
-// CartController.php - FIXED VERSION
-
-// BẬT HIỂN THỊ LỖI
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// BẮT ĐẦU OUTPUT BUFFERING
 ob_start();
 
 // REQUIRE FILES TRƯỚC KHI XỬ LÝ
