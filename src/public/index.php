@@ -66,8 +66,9 @@ switch ($action) {
         $item_id = $_POST['item_id'] ?? null;
         $quantity = $_POST['quantity'] ?? 1;
         if ($item_id) {
-            $result = $controller->updateCartItem($item_id, $quantity);
-            echo json_encode(['success' => $result]);
+            $result = $controller->handleUpdateQuantity($item_id, $quantity);
+            header('Content-Type: application/json');
+            echo json_encode($result);
         }
         break;
     case 'remove_cart_item':
@@ -75,8 +76,9 @@ switch ($action) {
         $controller = new CartController($conn);
         $item_id = $_POST['item_id'] ?? null;
         if ($item_id) {
-            $result = $controller->removeCartItem($item_id);
-            echo json_encode(['success' => $result]);
+            $result = $controller->handleRemoveItem($item_id);
+            header('Content-Type: application/json');
+            echo json_encode($result);
         }
         break;
     case 'login':
@@ -98,4 +100,3 @@ switch ($action) {
         break;
 }
 ?>
-
