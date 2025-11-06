@@ -89,8 +89,8 @@ include __DIR__ . '/templates/header.php';
              min="<?= $min_price ?>" max="<?= $max_price ?>" 
              value="<?= $current_max ?>" id="price_slider">
       <div class="d-flex justify-content-between">
-        <small>$<?= number_format($min_price, 0) ?></small>
-        <small>$<?= number_format($max_price, 0) ?></small>
+        <small><?= number_format($min_price, 0) ?>đ</small>
+        <small><?= number_format($max_price, 0) ?>đ</small>
       </div>
       <button type="submit" class="btn btn-primary btn-sm w-100 mt-2">Áp dụng giá</button>
     </div>
@@ -164,7 +164,7 @@ include __DIR__ . '/templates/header.php';
     
     <?php if (!empty($_GET['min_price']) && !empty($_GET['max_price'])): ?>
       <span class="badge bg-light text-dark ms-2">
-        Giá: $<?= number_format($_GET['min_price'], 0) ?> - $<?= number_format($_GET['max_price'], 0) ?>
+        Giá: <?= number_format($_GET['min_price'], 0) ?>đ - $<?= number_format($_GET['max_price'], 0) ?>đ
         <a href="<?= removePriceFilter() ?>" class="text-muted ms-1">×</a>
       </span>
     <?php endif; ?>
@@ -190,7 +190,7 @@ include __DIR__ . '/templates/header.php';
               <!-- HIỂN THỊ GIÁ THẤP NHẤT -->
               <p class="text-muted mb-1">
                 <?php if (isset($product['min_price'])): ?>
-                  Từ $<?= number_format($product['min_price'], 2) ?>
+                  Từ <?= number_format($product['min_price'], 2) ?>đ
                 <?php else: ?>
                   Đang cập nhật giá
                 <?php endif; ?>
