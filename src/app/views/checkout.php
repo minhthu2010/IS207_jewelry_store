@@ -1,4 +1,5 @@
 <?php 
+$base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/public/";
 include __DIR__ . '/templates/header.php';
 ?>
 
@@ -76,79 +77,79 @@ include __DIR__ . '/templates/header.php';
             </div>
         </div>
         
-        <!-- Order Summary -->
-        <div class="order-summary">
-            <div class="section">
-                <h2>Đơn Hàng Của Bạn</h2>
-                <div class="order-items-container">
-                    <table class="order-items">
-                        <thead>
-                            <tr>
-                                <th>Sản Phẩm</th>
-                                <th>Số Lượng</th>
-                                <th>Giá</th>
-                            </tr>
-                        </thead>
-                        <tbody id="order-items-body">
-                            <?php foreach ($cart_items as $item): ?>
-                            <tr>
-                                <td>
-                                    <div class="product-info">
-                                        <div class="product-image">
-                                            <?php if (!empty($item['image_url'])): ?>
-                                                <!-- SỬA ĐƯỜNG DẪN ẢNH SẢN PHẨM -->
-                                                <img src="<?= $base_url . 'assets/images/products/' . basename($item['image_url']) ?>" 
-                                                     alt="<?php echo htmlspecialchars($item['product_name']); ?>"
-                                                     onerror="this.src='<?= $base_url ?>assets/images/no-image.jpg'">
-                                            <?php else: ?>
-                                                <!-- SỬA ĐƯỜNG DẪN ẢNH MẶC ĐỊNH -->
-                                                <img src="<?= $base_url ?>assets/images/no-image.jpg" 
-                                                     alt="No image">
-                                            <?php endif; ?>
-                                        </div>
-                                        <div>
-                                            <div class="product-name"><?php echo htmlspecialchars($item['product_name']); ?></div>
-                                            <div class="product-variant"><?php echo htmlspecialchars($item['attributes'] ?? ''); ?></div>
-                                            <?php if ($item['warranty_period']): ?>
-                                                <div class="warranty-info">Bảo hành: <?php echo htmlspecialchars($item['warranty_period']); ?> tháng</div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                                <td><?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?>₫</td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="price-summary">
-                    <div class="summary-row">
-                        <span>Tạm tính:</span>
-                        <span id="subtotal"><?php echo number_format($subtotal, 0, ',', '.'); ?>₫</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Phí vận chuyển:</span>
-                        <span id="shipping-fee">
-                            <?php 
-                            if ($shipping_fee == 0) {
-                                echo 'Miễn phí';
-                            } else {
-                                echo number_format($shipping_fee, 0, ',', '.') . '₫';
-                            }
-                            ?>
-                        </span>
-                    </div>                
-                    <div class="summary-row summary-total">
-                        <span>Tổng cộng:</span>
-                        <span id="total-amount"><?php echo number_format($total, 0, ',', '.'); ?>₫</span>
-                    </div>
-                </div>
-                
-                <button class="btn" id="place-order">Đặt Hàng</button>
+<!-- Order Summary -->
+<div class="order-summary">
+    <div class="section">
+        <h2>Đơn Hàng Của Bạn</h2>
+        <div class="order-items-container">
+            <table class="order-items">
+                <thead>
+                    <tr>
+                        <th>Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Giá</th>
+                    </tr>
+                </thead>
+                <tbody id="order-items-body">
+                    <?php foreach ($cart_items as $item): ?>
+                    <tr>
+                        <td>
+                            <div class="product-info">
+                                <div class="product-image">
+                                    <?php
+                                    // Xử lý hiển thị ảnh
+                                    $imageUrl = $base_url . 'assets/images/no-image.jpg';
+                                    if (!empty($item['image_url'])) {
+                                        $imageUrl = $base_url . 'assets/images/products/' . $item['image_url'];
+                                    }
+                                    ?>
+                                    <img src="<?= $imageUrl ?>" 
+                                         alt="<?= htmlspecialchars($item['product_name']) ?>"
+                                         onerror="this.src='<?= $base_url ?>assets/images/no-image.jpg'">
+                                </div>
+                                <div>
+                                    <div class="product-name"><?php echo htmlspecialchars($item['product_name']); ?></div>
+                                    <div class="product-variant"><?php echo htmlspecialchars($item['attributes'] ?? ''); ?></div>
+                                    <?php if ($item['warranty_period']): ?>
+                                        <div class="warranty-info">Bảo hành: <?php echo htmlspecialchars($item['warranty_period']); ?> tháng</div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </td>
+                        <td><?php echo htmlspecialchars($item['quantity']); ?></td>
+                        <td><?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?>₫</td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="price-summary">
+            <div class="summary-row">
+                <span>Tạm tính:</span>
+                <span id="subtotal"><?php echo number_format($subtotal, 0, ',', '.'); ?>₫</span>
+            </div>
+            <div class="summary-row">
+                <span>Phí vận chuyển:</span>
+                <span id="shipping-fee">
+                    <?php 
+                    if ($shipping_fee == 0) {
+                        echo 'Miễn phí';
+                    } else {
+                        echo number_format($shipping_fee, 0, ',', '.') . '₫';
+                    }
+                    ?>
+                </span>
+            </div>                
+            <div class="summary-row summary-total">
+                <span>Tổng cộng:</span>
+                <span id="total-amount"><?php echo number_format($total, 0, ',', '.'); ?>₫</span>
             </div>
         </div>
+        
+        <button class="btn" id="place-order">Đặt Hàng</button>
+    </div>
+</div>
     </div>
 </div>
 
