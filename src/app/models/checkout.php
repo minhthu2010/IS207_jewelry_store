@@ -17,40 +17,56 @@ class CheckoutModel {
 
     // Lấy thông tin sản phẩm từ cart_item
     public function getCartItems($customer_id, $selected_items = []) {
-        $query = "SELECT 
-                    ci.id as cart_item_id,
-                    ci.variant_id,
-                    ci.quantity,
-                    pv.price,
-                    p.name as product_name,
-                    pv.size,
-                    pv.sku,
-                    pv.stock_quantity,
-                    p.pro_id,
-                    p.warranty_id,
-                    w.period as warranty_period,
-                    w.description as warranty_description,
-                    (SELECT image_url FROM product_image WHERE product_id = p.pro_id AND sort_order = 0 LIMIT 1) as image_url
-                  FROM cart_item ci
-                  JOIN cart c ON ci.cart_id = c.cart_id
-                  JOIN product_variant pv ON ci.variant_id = pv.variant_id
-                  JOIN product p ON pv.product_id = p.pro_id
-                  LEFT JOIN warranty w ON p.warranty_id = w.w_id
-                  WHERE c.customer_id = ?";
-        
-        if (!empty($selected_items)) {
-            $placeholders = str_repeat('?,', count($selected_items) - 1) . '?';
-            $query .= " AND ci.id IN ($placeholders)";
-            $stmt = $this->db->prepare($query);
-            $params = array_merge([$customer_id], $selected_items);
-            $stmt->execute($params);
-        } else {
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$customer_id]);
-        }
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $query = "SELECT 
+                ci.id as cart_item_id,
+                ci.variant_id,
+                ci.quantity,
+                pv.price,
+                p.name as product_name,
+                pv.size,
+                pv.sku,
+                pv.stock_quantity,
+                p.pro_id,
+                p.warranty_id,
+                w.period as warranty_period,
+                w.description as warranty_description,
+                -- SỬA: Lấy ảnh đầu tiên của sản phẩm (sắp xếp theo sort_order)
+                (SELECT pi.image_url 
+                 FROM product_image pi 
+                 WHERE pi.product_id = p.pro_id 
+                 ORDER BY pi.sort_order ASC, pi.image_id ASC 
+                 LIMIT 1) as image_url
+              FROM cart_item ci
+              JOIN cart c ON ci.cart_id = c.cart_id
+              JOIN product_variant pv ON ci.variant_id = pv.variant_id
+              JOIN product p ON pv.product_id = p.pro_id
+              LEFT JOIN warranty w ON p.warranty_id = w.w_id
+              WHERE c.customer_id = ?";
+    
+    if (!empty($selected_items)) {
+        $placeholders = str_repeat('?,', count($selected_items) - 1) . '?';
+        $query .= " AND ci.id IN ($placeholders)";
+        $stmt = $this->db->prepare($query);
+        $params = array_merge([$customer_id], $selected_items);
+        $stmt->execute($params);
+    } else {
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$customer_id]);
     }
+    
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // DEBUG: Ghi log để kiểm tra dữ liệu ảnh
+    error_log("Cart items image data: " . print_r(array_map(function($item) {
+        return [
+            'product_name' => $item['product_name'],
+            'image_url' => $item['image_url'],
+            'variant_id' => $item['variant_id']
+        ];
+    }, $result), true));
+    
+    return $result;
+}
 
     // Tạo đơn hàng mới
     public function createOrder($order_data) {
