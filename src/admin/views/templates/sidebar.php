@@ -14,7 +14,7 @@
     <hr class="sidebar-divider">
     <div class="sidebar-heading">Quản lý</div>
 
-    <div class="nav-item"><a class="nav-link" href="users.php"><i class="fas fa-fw fa-users"></i>Người dùng</a></div>
+    
     <div class="nav-item">
         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProducts">
             <i class="fas fa-fw fa-gem"></i><span>Sản phẩm</span><i class="fas fa-fw fa-angle-down float-end"></i>
@@ -28,6 +28,12 @@
     </div>
 
     <div class="nav-item"><a class="nav-link" href="orders.php"><i class="fas fa-fw fa-shopping-cart"></i>Đơn hàng</a></div>
-    <div class="nav-item"><a class="nav-link" href="customers.php"><i class="fas fa-fw fa-user-friends"></i>Khách hàng</a></div>
-    <div class="nav-item"><a class="nav-link" href="reports.php"><i class="fas fa-fw fa-chart-bar"></i>Báo cáo</a></div>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="customers.php">
+            <i class="bi bi-people"></i>
+            <span>Khách hàng</span>
+        </a>
+    </li>
+
 </div>
