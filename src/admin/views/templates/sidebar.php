@@ -31,9 +31,10 @@
     
     <li class="nav-item">
         <a class="nav-link" href="customers.php">
-            <i class="bi bi-people"></i>
+            <i class="fas fa-fw fa-user-friends"></i>
             <span>Khách hàng</span>
         </a>
     </li>
 
 </div>
+
