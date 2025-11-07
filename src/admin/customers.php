@@ -12,6 +12,15 @@ if (!isset($_SESSION['admin'])) {
     exit;
 }
 
-$controller = new CustomerController($conn);
-$controller->index();
+$action = $_GET['action'] ?? 'index';
+
+if ($action === 'delete') {
+    $controller = new CustomerController($conn);
+    $controller->delete();
+    exit; // Kết thúc sau khi xử lý API
+} else {
+    $controller = new CustomerController($conn);
+    $controller->index();
+}
+
 ?>
