@@ -64,18 +64,10 @@ body {
 }
 
 .form-group input:focus {
-    border-color: #e74c3c;
+    border-color: #503ce7;
 }
 
-.toggle-password {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 14px;
-    color: #666;
-}
+
 
 /* Quên mật khẩu + remember */
 .form-options {
@@ -87,7 +79,7 @@ body {
 }
 
 .form-options .forgot-link {
-    color: #e74c3c;
+    color: #503ce7;
     text-decoration: none;
 }
 
@@ -98,7 +90,7 @@ body {
 /* Nút đăng nhập */
 .login-btn {
     width: 100%;
-    background: linear-gradient(180deg, #e74c3c, #c0392b);
+    background: linear-gradient(180deg, #503ce7, #1f1fbf);
     color: white;
     padding: 10px;
     border: none;
@@ -109,7 +101,7 @@ body {
 }
 
 .login-btn:hover {
-    background: linear-gradient(180deg, #c0392b, #a93226);
+    background: linear-gradient(180deg, #503ce7, #1f1fbf);
 }
 
 /* Lỗi */
