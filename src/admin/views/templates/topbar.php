@@ -14,7 +14,11 @@
                 <a class="dropdown-item" href="#">Hồ sơ</a>
                 <a class="dropdown-item" href="#">Cài đặt</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="../public/logout.php">Đăng xuất</a>
+                <a href="controllers/adminLoginController.php?action=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </a>
+
+
             </div>
         </li>
     </ul>
