@@ -23,19 +23,16 @@
             <form method="POST" action="">
                 <div class="form-group">
                     <label><i class="fa fa-user"></i></label>
-                    <input type="text" name="email_or_username" placeholder="Email *" required>
+                    <input type="text" name="email_or_username" placeholder="Email" required>
                 </div>
 
                 <div class="form-group">
                     <label><i class="fa fa-lock"></i></label>
-                    <input type="password" name="password" placeholder="Mật khẩu *" required>
-                    <span class="toggle-password">👁</span>
+                    <input type="password" name="password" placeholder="Mật khẩu" required>
+                    
                 </div>
 
-                <div class="form-options">
-                    <label><input type="checkbox" name="remember"> Ghi nhớ đăng nhập</label>
-                    <a href="forgot_password.php" class="forgot-link">Quên mật khẩu?</a>
-                </div>
+                
 
                 <button type="submit" class="login-btn">Đăng nhập</button>
             </form>
