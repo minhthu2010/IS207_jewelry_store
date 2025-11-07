@@ -26,7 +26,7 @@ include __DIR__ . '/templates/topbar.php';
 
     <div class="card shadow">
         <div class="card-body">
-            <table class="table table-bordered table-hover">
+            <table class="table table-bordered table-hover" id="customersTable">
                 <thead class="table-primary">
                     <tr>
                         <th>ID</th>
@@ -36,12 +36,16 @@ include __DIR__ . '/templates/topbar.php';
                         <th>Địa chỉ</th>
                         <th>Số đơn hàng</th>
                         <th>Ngày tạo</th>
+                        <th>Chức năng</th> 
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($customers)) : ?>
                         <?php foreach ($customers as $cus) : ?>
-                            <tr>
+                            <tr class="customer-row" 
+                                data-id="<?= $cus['cus_id'] ?>" 
+                                data-name="<?= htmlspecialchars($cus['fullname']) ?>"
+                                style="cursor: pointer;">
                                 <td><?= $cus['cus_id'] ?></td>
                                 <td><?= htmlspecialchars($cus['fullname']) ?></td>
                                 <td><?= htmlspecialchars($cus['email']) ?></td>
@@ -49,11 +53,17 @@ include __DIR__ . '/templates/topbar.php';
                                 <td><?= htmlspecialchars($cus['address']) ?></td>
                                 <td><?= $cus['order_count'] ?></td>
                                 <td><?= $cus['created_at'] ?></td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger delete-customer" data-id="<?= $cus['cus_id'] ?>">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </button>
+                                </td>
+
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
                         <tr>
-                            <td colspan="7" class="text-center text-muted">Không có khách hàng nào</td>
+                            <td colspan="8" class="text-center text-muted">Không có khách hàng nào</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -62,4 +72,233 @@ include __DIR__ . '/templates/topbar.php';
     </div>
 </div>
 
+<!-- MODAL: Danh sách đơn hàng của khách hàng -->
+<div class="modal fade" id="ordersModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Đơn hàng của <span id="customerName"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Mã đơn</th>
+              <th>Ngày đặt</th>
+              <th>Tổng tiền</th>
+              <th>Trạng thái</th>
+              <th>Thanh toán</th>
+              <th>Chi tiết</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Chi tiết đơn hàng -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chi tiết đơn hàng <span id="orderId"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="orderDetailBody">
+        <!-- nội dung chi tiết đơn hàng load bằng JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("DOM đã tải xong - JavaScript đang hoạt động");
+
+        // Hàm helper
+        function getOrderStatus(s) {
+            const map = {0:"Chờ xác nhận",1:"Đã xác nhận",2:"Đang giao",3:"Hoàn thành",4:"Đã hủy"};
+            return map[s] || "Không xác định";
+        }
+
+        function getPaymentStatus(s) {
+            if(s==="success") return "<span class='text-success'>Đã thanh toán</span>";
+            if(s==="pending") return "<span class='text-warning'>Chờ thanh toán</span>";
+            return "<span class='text-danger'>Thất bại</span>";
+        }
+
+        // Load chi tiết đơn hàng
+        async function loadOrderDetail(orderId){
+            try{
+                console.log("Đang tải chi tiết đơn hàng:", orderId);
+                const res = await fetch('/jewelry_website/admin/controllers/getOrderDetailController.php?order_id=' + orderId);
+
+                const data = await res.json();
+                if(!data.success) return alert(data.message);
+                const o = data.order;
+                const items = data.items.map(i =>
+                    `<tr><td>${i.product_name} ${i.size||''}</td><td>${i.quantity}</td><td>${parseFloat(i.price_at_purchase).toLocaleString()}₫</td><td>${parseFloat(i.total_item).toLocaleString()}₫</td></tr>`
+                ).join("");
+
+                document.getElementById("orderDetailBody").innerHTML = `
+                    <p><strong>Ngày đặt:</strong> ${new Date(o.order_date).toLocaleDateString('vi-VN')}</p>
+                    <p><strong>Trạng thái:</strong> ${getOrderStatus(o.status)}</p>
+                    <p><strong>Phương thức thanh toán:</strong> ${o.payment_method}</p>
+                    <hr>
+                    <table class="table table-bordered">
+                    <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                    <tbody>${items}</tbody>
+                    </table>
+                    <p class="text-end"><strong>Tổng cộng: ${parseFloat(o.total).toLocaleString()}₫</strong></p>
+                `;
+                
+                // Hiển thị modal chi tiết đơn hàng
+                const orderDetailModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+                orderDetailModal.show();
+            }catch(err){
+                console.error("Lỗi khi tải chi tiết đơn hàng:", err);
+            }
+        }
+
+        // Gắn sự kiện click cho từng dòng khách hàng - CHỈ MỘT LẦN
+        document.querySelectorAll('.customer-row').forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Ngăn chặn khi click vào các nút hành động
+                if (e.target.closest('.delete-customer')) {
+                    return;
+                }
+                
+                const customerId = this.dataset.id;
+                const customerName = this.dataset.name;
+                console.log("Click vào khách hàng:", customerId, customerName);
+                
+                loadCustomerOrders(customerId, customerName);
+            });
+
+            // Hiệu ứng hover
+            row.style.cursor = 'pointer';
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+
+        // Hàm tải đơn hàng của khách hàng
+        async function loadCustomerOrders(customerId, customerName) {
+            document.getElementById("customerName").textContent = customerName;
+
+            try {
+                console.log("Đang gọi API với customer_id:", customerId);
+                const res = await fetch('/jewelry_website/admin/controllers/getCustomerOrdersController.php?customer_id=' + customerId);
+
+                const data = await res.json();
+                console.log("Kết quả API:", data);
+                
+                const tbody = document.querySelector("#ordersTable tbody");
+                tbody.innerHTML = "";
+
+                if (!data.success || data.orders.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='6' class='text-center text-muted'>Không có đơn hàng</td></tr>";
+                } else {
+                    data.orders.forEach(o => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>#${o.order_id}</td>
+                            <td>${new Date(o.order_date).toLocaleDateString('vi-VN')}</td>
+                            <td>${parseFloat(o.total).toLocaleString()}₫</td>
+                            <td>${getOrderStatus(o.status)}</td>
+                            <td>${getPaymentStatus(o.payment_status)}</td>
+                            <td><button class="btn btn-sm btn-primary view-detail" data-id="${o.order_id}">Xem</button></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Thêm sự kiện cho nút xem chi tiết
+                    tbody.querySelectorAll('.view-detail').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            console.log("Click vào nút xem chi tiết:", btn.dataset.id);
+                            loadOrderDetail(btn.dataset.id);
+                        });
+                    });
+                }
+
+                // Hiển thị modal
+                const ordersModal = new bootstrap.Modal(document.getElementById('ordersModal'));
+                ordersModal.show();
+                console.log("Modal đã hiển thị");
+
+            } catch (err) {
+                console.error("Lỗi khi tải đơn hàng:", err);
+                alert("Có lỗi xảy ra khi tải đơn hàng");
+            }
+        }
+
+        // Xóa khách hàng
+document.querySelectorAll('.delete-customer').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        const cusId = this.dataset.id;
+        const customerName = this.closest('.customer-row').dataset.name;
+        
+        Swal.fire({
+            title: 'Xác nhận xóa',
+            text: `Bạn có chắc chắn muốn xóa khách hàng "${customerName}" không?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/jewelry_website/admin/customers.php?action=delete&cus_id=' + cusId, { 
+                    method: "GET" 
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Thành công!',
+                            text: 'Đã xóa khách hàng thành công',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Lỗi!',
+                            text: 'Không thể xóa: ' + data.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error("Lỗi:", err);
+                    Swal.fire({
+                        title: 'Lỗi!',
+                        text: 'Có lỗi xảy ra khi xóa khách hàng',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            }
+        });
+    });
+});
+    });
+
+
+</script>
 <?php include __DIR__ . '/templates/footer.php'; ?>
