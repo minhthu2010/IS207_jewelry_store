@@ -133,9 +133,50 @@ class Customer {
     }
     return false;
 }
+public function getAllCustomers($search = '', $orderCount = '') {
+    $sql = "SELECT c.*, COUNT(o.order_id) AS order_count
+            FROM customer c
+            LEFT JOIN orders o ON c.cus_id = o.customer_id
+            WHERE 1";
 
+    if (!empty($search)) {
+        $sql .= " AND (c.fullname LIKE :search 
+                    OR c.phone LIKE :search 
+                    OR c.address LIKE :search)";
+    }
+
+    $sql .= " GROUP BY c.cus_id";
+
+    if (!empty($orderCount)) {
+        $sql .= " HAVING order_count = :orderCount";
+    }
+
+    $sql .= " ORDER BY c.cus_id ASC";
+
+    $stmt = $this->conn->prepare($sql);
+
+    if (!empty($search)) {
+        $searchParam = "%$search%";
+        $stmt->bindParam(':search', $searchParam);
+    }
+    if (!empty($orderCount)) {
+        $stmt->bindParam(':orderCount', $orderCount, PDO::PARAM_INT);
+    }
+
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Cập nhật thông tin khách hàng
+public function deleteCustomer($cus_id) {
+    $query = "DELETE FROM customer WHERE cus_id = :id";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':id', $cus_id);
+
+    return $stmt->execute();
+}
+
+
+
+}
 
 ?>
