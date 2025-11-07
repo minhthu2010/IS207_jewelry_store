@@ -1,0 +1,121 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Toàn trang */
+body {
+    background-color: #e8ebee;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+/* Khung chính */
+.login-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-box {
+    background-color: #fff;
+    padding: 40px 35px;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    width: 350px;
+    text-align: center;
+}
+
+.login-box h2 {
+    margin-bottom: 25px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Ô nhập liệu */
+.form-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 10px 10px 35px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    font-size: 14px;
+}
+
+.form-group input:focus {
+    border-color: #e74c3c;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Quên mật khẩu + remember */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.form-options .forgot-link {
+    color: #e74c3c;
+    text-decoration: none;
+}
+
+.form-options .forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* Nút đăng nhập */
+.login-btn {
+    width: 100%;
+    background: linear-gradient(180deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.login-btn:hover {
+    background: linear-gradient(180deg, #c0392b, #a93226);
+}
+
+/* Lỗi */
+.error {
+    color: red;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
