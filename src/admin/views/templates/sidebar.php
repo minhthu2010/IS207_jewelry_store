@@ -1,3 +1,6 @@
+<?php
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
 <div id="sidebar" class="sidebar">
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
         <div class="sidebar-brand-icon"><i class="fas fa-gem"></i></div>
@@ -5,16 +8,17 @@
     </a>
 
     <hr class="sidebar-divider">
-    <div class="nav-item active">
+
+    <div class="nav-item <?= $current_page == 'index.php' ? 'active' : '' ?>">
         <a class="nav-link" href="index.php">
             <i class="fas fa-fw fa-tachometer-alt"></i> <span>Dashboard</span>
         </a>
     </div>
 
     <hr class="sidebar-divider">
+
     <div class="sidebar-heading">Quản lý</div>
 
-    
     <div class="nav-item">
         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProducts">
             <i class="fas fa-fw fa-gem"></i><span>Sản phẩm</span><i class="fas fa-fw fa-angle-down float-end"></i>
@@ -27,14 +31,16 @@
         </div>
     </div>
 
-    <div class="nav-item"><a class="nav-link" href="orders.php"><i class="fas fa-fw fa-shopping-cart"></i>Đơn hàng</a></div>
-    
-    <li class="nav-item">
+    <div class="nav-item <?= $current_page == 'orders.php' ? 'active' : '' ?>">
+        <a class="nav-link" href="orders.php">
+            <i class="fas fa-fw fa-shopping-cart"></i>Đơn hàng
+        </a>
+    </div>
+
+    <li class="nav-item <?= $current_page == 'customers.php' ? 'active' : '' ?>">
         <a class="nav-link" href="customers.php">
             <i class="fas fa-fw fa-user-friends"></i>
             <span>Khách hàng</span>
         </a>
     </li>
-
 </div>
-
