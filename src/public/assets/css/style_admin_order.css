@@ -1,0 +1,53 @@
+/* Simple fix for orders page */
+.container-fluid {
+    padding: 20px;
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    background: #f8f9fc;
+    border-bottom: 2px solid #e3e6f0;
+    padding: 12px 15px;
+    font-weight: 600;
+    color: #4e73df;
+}
+
+.table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e3e6f0;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fc;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background: #2e59d9;
+    border-color: #2653d4;
+}
