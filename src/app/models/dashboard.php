@@ -87,7 +87,7 @@ class Dashboard {
     }
 
     // Doanh thu của một tháng cụ thể qua tất cả các năm
-    public function getRevenueByMonthForAllYears($month) {
+    public function getRevenueByMonthForSpecificMonth($month) {
         $sql = "SELECT 
                     YEAR(order_date) as year,
                     COALESCE(SUM(total), 0) as revenue
@@ -95,7 +95,7 @@ class Dashboard {
                 WHERE payment_status = 'success' 
                 AND MONTH(order_date) = ?
                 GROUP BY YEAR(order_date)
-                ORDER BY year";
+                ORDER BY year(order_date)";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$month]);
@@ -124,6 +124,18 @@ class Dashboard {
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return $result['total_orders'] ?? 0;
+    }
+
+    public function getTotalOrdersByMonthAllYears($month) {
+        $sql = "SELECT COUNT(*) as total_orders 
+                FROM orders 
+                WHERE MONTH(order_date) = ? AND payment_status = 'success'";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$month]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         return $result['total_orders'] ?? 0;
@@ -179,6 +191,50 @@ class Dashboard {
         return $revenueData;
     }
     
+    // Phương thức lấy đơn hàng theo loại lọc
+    public function getRecentOrdersByFilter($limit = 10, $filterType = '', $filterMonth = '', $filterYear = '') {
+        $sql = "SELECT o.*, c.fullname as customer_name 
+                FROM orders o 
+                LEFT JOIN customer c ON o.customer_id = c.cus_id 
+                WHERE o.payment_status = 'success'";
+        
+        $params = [];
+        
+        switch($filterType) {
+            case 'month':
+                // Lọc theo tháng (tất cả năm)
+                $sql .= " AND MONTH(o.order_date) = ?";
+                $params[] = $filterMonth;
+                break;
+                
+            case 'year':
+                // Lọc theo năm
+                $sql .= " AND YEAR(o.order_date) = ?";
+                $params[] = $filterYear;
+                break;
+                
+            case 'month_year':
+                // Lọc theo tháng và năm
+                $sql .= " AND MONTH(o.order_date) = ? AND YEAR(o.order_date) = ?";
+                $params[] = $filterMonth;
+                $params[] = $filterYear;
+                break;
+                
+            default:
+                // Mặc định: tháng năm hiện tại
+                $sql .= " AND MONTH(o.order_date) = ? AND YEAR(o.order_date) = ?";
+                $params[] = date('m');
+                $params[] = date('Y');
+                break;
+        }
+        
+        $sql .= " ORDER BY o.order_date DESC LIMIT " . (int)$limit;
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Danh sách đơn hàng mới nhất
     public function getRecentOrders($limit = 10, $month = null, $year = null) {
         $sql = "SELECT 
