@@ -5,13 +5,15 @@ session_start();
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../app/models/order.php';
 
-
+// Kiểm tra admin đã đăng nhập
 if (!isset($_SESSION['admin'])) {
     echo json_encode(['success' => false, 'message' => 'Bạn chưa đăng nhập']);
     exit;
 }
 
+// Lấy order_id từ GET
 $orderId = $_GET['order_id'] ?? null;
 if (!$orderId) {
     echo json_encode(['success' => false, 'message' => 'Thiếu mã đơn hàng']);
@@ -19,50 +21,26 @@ if (!$orderId) {
 }
 
 try {
-    // Lấy thông tin đơn hàng
-    $stmt = $conn->prepare("
-        SELECT 
-            o.order_id,
-            o.order_date,
-            o.total,
-            o.status,
-            o.payment_method,
-            o.payment_status,
-            o.shipping_address,
-            o.shipping_fullname,
-            o.shipping_phone,
-            o.shipping_fee,
-            o.notes
-        FROM orders o
-        WHERE o.order_id = :oid
-    ");
-    $stmt->bindParam(':oid', $orderId, PDO::PARAM_INT);
-    $stmt->execute();
-    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Tạo đối tượng Order
+    $orderModel = new Order($conn);
 
-    if (!$order) {
+    // Lấy chi tiết đơn hàng từ model
+    $result = $orderModel->getOrderDetail($orderId);
+
+    if (!$result) {
         echo json_encode(['success' => false, 'message' => 'Không tìm thấy đơn hàng']);
         exit;
     }
 
-    // Lấy chi tiết sản phẩm trong đơn
-    $stmt2 = $conn->prepare("
-        SELECT 
-            p.name AS product_name,
-            pv.size,
-            od.quantity,
-            od.price_at_purchase,
-            (od.quantity * od.price_at_purchase) AS total_item
-        FROM order_detail od
-        JOIN product_variant pv ON od.variant_id = pv.variant_id
-        JOIN product p ON pv.product_id = p.pro_id
-        WHERE od.order_id = :oid
-    ");
-    $stmt2->bindParam(':oid', $orderId, PDO::PARAM_INT);
-    $stmt2->execute();
-    $items = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-
-    echo json_encode(['success' => true, 'order' => $order, 'items' => $items]);
+    // Trả về JSON
+    echo json_encode([
+        'success' => true,
+        'order' => $result['order'],
+        'items' => $result['items']
+    ]);
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Lỗi server: ' . $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Lỗi server: ' . $e->getMessage()
+    ]);
 }
