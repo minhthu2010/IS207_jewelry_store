@@ -36,7 +36,7 @@ include __DIR__ . '/templates/topbar.php';
                         <th>Địa chỉ</th>
                         <th>Số đơn hàng</th>
                         <th>Ngày tạo</th>
-                        <th>Chức năng</th> 
+                        <th>Trạng thái</th> 
                     </tr>
                 </thead>
                 <tbody>
@@ -54,9 +54,15 @@ include __DIR__ . '/templates/topbar.php';
                                 <td><?= $cus['order_count'] ?></td>
                                 <td><?= $cus['created_at'] ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-danger delete-customer" data-id="<?= $cus['cus_id'] ?>">
-                                        <i class="fas fa-trash"></i> Xóa
-                                    </button>
+                                    <?php if ($cus['status'] == 1): ?>
+                                        <button class="btn btn-sm btn-success toggle-status" data-id="<?= $cus['cus_id'] ?>" data-status="1">
+                                            Đang hoạt động
+                                        </button>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-secondary toggle-status" data-id="<?= $cus['cus_id'] ?>" data-status="0">
+                                            Đã khóa
+                                        </button>
+                                    <?php endif; ?>
                                 </td>
 
                             </tr>
@@ -241,62 +247,50 @@ include __DIR__ . '/templates/topbar.php';
             }
         }
 
-        // Xóa khách hàng
-document.querySelectorAll('.delete-customer').forEach(btn => {
-    btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        const cusId = this.dataset.id;
-        const customerName = this.closest('.customer-row').dataset.name;
-        
-        Swal.fire({
-            title: 'Xác nhận xóa',
-            text: `Bạn có chắc chắn muốn xóa khách hàng "${customerName}" không?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Xóa',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch('/jewelry_website/admin/customers.php?action=delete&cus_id=' + cusId, { 
-                    method: "GET" 
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Thành công!',
-                            text: 'Đã xóa khách hàng thành công',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Lỗi!',
-                            text: 'Không thể xóa: ' + data.message,
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.error("Lỗi:", err);
-                    Swal.fire({
-                        title: 'Lỗi!',
-                        text: 'Có lỗi xảy ra khi xóa khách hàng',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
+        // Thay đổi trạng thái khách hàng
+        document.querySelectorAll('.toggle-status').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            const cusId = this.dataset.id;
+            const currentStatus = this.dataset.status;
+
+            const confirmText = currentStatus === "1" 
+                ? "Bạn có chắc chắn muốn khóa tài khoản này không?"
+                : "Bạn có chắc chắn muốn kích hoạt lại tài khoản này không?";
+
+            Swal.fire({
+                title: 'Xác nhận',
+                text: confirmText,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/jewelry_website/admin/customers.php?action=toggle_status&cus_id=' + cusId, { 
+                        method: "GET" 
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Thành công!', data.message, 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Lỗi!', data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Lỗi!', 'Có lỗi xảy ra khi cập nhật trạng thái', 'error');
                     });
-                });
-            }
+                }
+            });
         });
     });
-});
+
     });
 
 
