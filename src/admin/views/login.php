@@ -32,6 +32,10 @@
                     
                 </div>
 
+                <div class="form-options">
+                    <label><input type="checkbox" name="remember"> Ghi nhớ đăng nhập</label>
+                </div>
+
                 
 
                 <button type="submit" class="login-btn">Đăng nhập</button>
