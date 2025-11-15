@@ -38,11 +38,11 @@
         <span class="user-name"><?php echo htmlspecialchars($fullname); ?></span>
         <div class="dropdown-menu" id="dropdown-menu">
             <a href="account.php" class="active">Hồ sơ khách hàng</a>
-            <a href="#" id="logoutBtn" class="logout">Log Out</a>        
+            <a href="#" id="logoutBtn" class="logout">Đăng xuất</a>        
         </div>
     </div>
 <?php else: ?>
-    <a href="login.php" class="login" id="loginLink">Log In</a>
+    <a href="login.php" class="login" id="loginLink">Đăng nhập</a>
 <?php endif; ?>
 </div>
 
@@ -113,15 +113,24 @@ if (logoutBtn) {
   logoutBtn.addEventListener('click', async (e) => {
     e.preventDefault();
 
-    const res = await fetch('logout.php', { method: 'POST' });
-    const data = await res.json();
+    try {
+      const res = await fetch('logout.php', { method: 'POST' });
+      const data = await res.json();
 
-    if (data.status === 'success') {
-      userArea.innerHTML = `<a href="login.php" class="login" id="loginLink">Log In</a>`;
-      updateCartCount(0);
+      if (data.status === 'success') {
+        // Cập nhật phần user area (nếu muốn)
+        userArea.innerHTML = `<a href="login.php" class="login" id="loginLink">Đăng nhập</a>`;
+        updateCartCount(0);
+
+        // Chuyển về index.php
+        window.location.href = data.redirect;
+      }
+    } catch (err) {
+      console.error('Logout failed:', err);
     }
   });
 }
+
 </script>
 
 </body>
