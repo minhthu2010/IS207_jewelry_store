@@ -18,21 +18,30 @@ class CustomerController {
         include __DIR__ . '/../views/customers.php';
     }
 
-    // Chức năng xóa khách hàng
-    public function delete() {
-        if (!isset($_GET['cus_id'])) {
-            echo json_encode(['success' => false, 'message' => 'Thiếu mã khách hàng']);
-            return;
-        }
-
-        $cusId = intval($_GET['cus_id']);
-
-        if ($this->customerModel->deleteCustomer($cusId)) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Không thể xóa khách hàng']);
-        }
+    public function toggle_status() {
+    if (!isset($_GET['cus_id'])) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu mã khách hàng']);
+        return;
     }
+
+    $cusId = intval($_GET['cus_id']);
+
+    $cus = $this->customerModel->getCustomerById($cusId);
+    if (!$cus) {
+        echo json_encode(['success' => false, 'message' => 'Không tìm thấy khách hàng']);
+        return;
+    }
+
+    $newStatus = $cus['status'] == 1 ? 0 : 1;
+
+    if ($this->customerModel->updateStatus($cusId, $newStatus)) {
+        $msg = $newStatus == 1 ? 'Tài khoản đã được kích hoạt' : 'Tài khoản đã bị khóa';
+        echo json_encode(['success' => true, 'message' => $msg]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Không thể cập nhật trạng thái']);
+    }
+}
+
 }
 
 ?>
