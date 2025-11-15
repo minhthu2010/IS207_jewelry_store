@@ -55,27 +55,31 @@ class Customer {
 
     // Đăng nhập
     public function login($email, $password) {
-        $query = "SELECT cus_id, fullname, email, password 
-                  FROM " . $this->table_name . " 
-                  WHERE email = :email 
-                  LIMIT 0,1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":email", $email);
-        $stmt->execute();
+    $query = "SELECT cus_id, fullname, email, password, status 
+              FROM " . $this->table_name . " 
+              WHERE email = :email 
+              LIMIT 0,1";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(":email", $email);
+    $stmt->execute();
 
-        if ($stmt->rowCount() > 0) {
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (password_verify($password, $row['password'])) {
-                $_SESSION['customer'] = [
-                    'cus_id' => $row['cus_id'],
-                    'fullname' => $row['fullname'],
-                    'email' => $row['email']
-                ];
-                return true;
-            }
+    if ($stmt->rowCount() > 0) {
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row['status'] == 0) {
+            return ['success' => false, 'message' => 'Tài khoản đang bị khóa'];
         }
-        return false;
+
+        if (password_verify($password, $row['password'])) {
+            $_SESSION['customer'] = $row;
+            return ['success' => true];
+        }
     }
+
+    return ['success' => false, 'message' => 'Email hoặc mật khẩu không đúng'];
+}
+
+
 
     // Lưu token vào DB
     public function saveToken($cus_id, $token) {
@@ -167,13 +171,20 @@ public function getAllCustomers($search = '', $orderCount = '') {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-public function deleteCustomer($cus_id) {
-    $query = "DELETE FROM customer WHERE cus_id = :id";
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(':id', $cus_id);
+public function getCustomerById($cus_id){
+    $stmt = $this->conn->prepare("SELECT cus_id, status FROM customer WHERE cus_id = :id LIMIT 1");
+    $stmt->bindParam(':id', $cus_id, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
+public function updateStatus($cus_id, $status){
+    $stmt = $this->conn->prepare("UPDATE customer SET status = :status WHERE cus_id = :id");
+    $stmt->bindParam(':status', $status, PDO::PARAM_INT);
+    $stmt->bindParam(':id', $cus_id, PDO::PARAM_INT);
     return $stmt->execute();
 }
+
 
 
 
