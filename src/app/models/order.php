@@ -92,5 +92,72 @@ class Order {
             'failed' => 'THẤT BẠI'
         ];
     }
+
+    // Lấy tất cả đơn hàng của khách hàng
+    public function getOrdersByCustomer($customerId) {
+        $sql = "SELECT 
+                    o.order_id,
+                    o.order_date,
+                    o.total,
+                    o.status,
+                    o.payment_method,
+                    o.payment_status
+                FROM orders o
+                WHERE o.customer_id = :cid
+                ORDER BY o.order_date DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':cid', $customerId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    public function getOrderDetail($orderId) {
+        // Lấy thông tin đơn hàng
+        $stmt = $this->db->prepare("
+            SELECT 
+                o.order_id,
+                o.order_date,
+                o.total,
+                o.status,
+                o.payment_method,
+                o.payment_status,
+                o.shipping_address,
+                o.shipping_fullname,
+                o.shipping_phone,
+                o.shipping_fee,
+                o.notes
+            FROM orders o
+            WHERE o.order_id = :oid
+        ");
+        $stmt->bindParam(':oid', $orderId, PDO::PARAM_INT);
+        $stmt->execute();
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$order) {
+            return null;
+        }
+
+        // Lấy chi tiết sản phẩm trong đơn
+        $stmt2 = $this->db->prepare("
+            SELECT 
+                p.name AS product_name,
+                pv.size,
+                od.quantity,
+                od.price_at_purchase,
+                (od.quantity * od.price_at_purchase) AS total_item
+            FROM order_detail od
+            JOIN product_variant pv ON od.variant_id = pv.variant_id
+            JOIN product p ON pv.product_id = p.pro_id
+            WHERE od.order_id = :oid
+        ");
+        $stmt2->bindParam(':oid', $orderId, PDO::PARAM_INT);
+        $stmt2->execute();
+        $items = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+        return ['order' => $order, 'items' => $items];
+    }
+
 }
 ?>
