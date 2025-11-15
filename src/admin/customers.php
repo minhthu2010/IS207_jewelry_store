@@ -1,4 +1,4 @@
-<?php
+<?php 
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/controllers/customerController.php';
 
@@ -14,13 +14,12 @@ if (!isset($_SESSION['admin'])) {
 
 $action = $_GET['action'] ?? 'index';
 
-if ($action === 'delete') {
-    $controller = new CustomerController($conn);
-    $controller->delete();
-    exit; // Kết thúc sau khi xử lý API
+$controller = new CustomerController($conn);
+
+// Xử lý toggle_status
+if ($action === 'toggle_status') {
+    $controller->toggle_status();
+    exit; // Kết thúc sau khi xuất JSON
 } else {
-    $controller = new CustomerController($conn);
     $controller->index();
 }
-
-?>
