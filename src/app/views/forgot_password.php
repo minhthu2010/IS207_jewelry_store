@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password</title>
+    <title>Quên mật khẩu</title>
     <link rel="stylesheet" href="../public/assets/css/bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="../public/assets/css/style_login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -13,12 +13,12 @@
 <body class="login">
     <div class="login-container">
         <div class="login-left">
-            <h1>Reset Your Password</h1>
-            <p>Enter your email to receive a password reset link.</p>
+            <h1>Đặt lại mật khẩu</h1>
+            <p>Nhập email.</p>
         </div>
 
         <div class="login-right">
-            <h2>Forgot Password</h2>
+            <h2>Quên mật khẩu</h2>
 
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
@@ -28,13 +28,13 @@
 
                 <div class="input-group">
                     <i class="fa-solid fa-envelope icon"></i>
-                    <input type="email" name="email" class="form-control" placeholder="Enter your email" required />
+                    <input type="email" name="email" class="form-control" placeholder="Nhập email của bạn" required />
                 </div>
 
-                <button type="submit" class="btn-login w-100">Send Reset Link</button>
+                <button type="submit" class="btn-login w-100">Gửi mã OTP</button>
 
                 <p class="signup-text">
-                    Remember your password? <a href="login.php">Back to Login</a>
+                    Nhớ mật khẩu? <a href="login.php">Quay về trang Đăng nhập</a>
                 </p>
             </form>
         </div>
