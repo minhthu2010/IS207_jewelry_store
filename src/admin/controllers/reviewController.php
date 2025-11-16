@@ -73,20 +73,6 @@ class ReviewController {
     }
 }
 
-// Khởi tạo và chạy controller
-$reviewController = new ReviewController($conn);
-
-// Xác định action
-if (isset($_GET['action'])) {
-    switch ($_GET['action']) {
-        case 'delete':
-            $reviewController->delete();
-            break;
-        default:
-            $reviewController->index();
-            break;
-    }
-} else {
-    $reviewController->index();
-}
+// Chỉ khởi tạo và chạy controller khi được gọi từ file chính
+// Không tự động chạy trong controller nữa
 ?>
