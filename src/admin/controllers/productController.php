@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../app/models/admin_product.php';
 require_once __DIR__ . '/../../app/models/admin_product_variant.php';
@@ -22,6 +21,9 @@ class ProductController_Admin {
     }
 
     public function index() {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         $filters = [
             'search' => $_GET['search'] ?? '',
             'category_id' => $_GET['category_id'] ?? '',
@@ -40,6 +42,9 @@ class ProductController_Admin {
     }
 
     public function create() {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         $categories = $this->productModel->getCategories();
         $warranties = $this->productModel->getWarranties();
         
@@ -47,6 +52,9 @@ class ProductController_Admin {
     }
 
     public function edit($product_id) {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         $product = $this->productModel->getProductById($product_id);
         if (!$product) {
             header('Location: products.php');
@@ -63,6 +71,9 @@ class ProductController_Admin {
     }
 
     public function store() {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         if ($_POST['action'] == 'create_product') {
             try {
                 $category_id = $_POST['category_id'];
@@ -118,6 +129,9 @@ class ProductController_Admin {
     }
 
     public function update($product_id) {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         if ($_POST['action'] == 'update_product') {
             try {
                 $result = $this->productModel->updateProduct($product_id, [
@@ -154,6 +168,9 @@ class ProductController_Admin {
     }
 
     public function delete($product_id) {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         $this->productModel->deleteProduct($product_id);
         $_SESSION['success'] = 'Sản phẩm đã được xóa thành công!';
         header('Location: products.php');
@@ -161,6 +178,9 @@ class ProductController_Admin {
     }
 
     public function addVariant() {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         if ($_POST['action'] == 'add_variant') {
             $product_id = $_POST['product_id'];
             
@@ -185,6 +205,9 @@ class ProductController_Admin {
     }
 
     public function updateVariant($variant_id) {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         if ($_POST['action'] == 'update_variant') {
             $product_id = $_POST['product_id'];
             
@@ -208,6 +231,9 @@ class ProductController_Admin {
     }
 
     public function deleteVariant($variant_id) {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         if ($_POST['action'] == 'delete_variant') {
             $product_id = $_POST['product_id'];
             $this->variantModel->deleteVariant($variant_id);
@@ -218,6 +244,9 @@ class ProductController_Admin {
     }
 
     public function addImage() {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         if ($_POST['action'] == 'add_image') {
             try {
                 $product_id = $_POST['product_id'];
@@ -257,6 +286,9 @@ class ProductController_Admin {
     }
 
     public function setMainImage($image_id) {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         if ($_POST['action'] == 'set_main_image') {
             $product_id = $_POST['product_id'];
             $this->imageModel->setMainImage($product_id, $image_id);
@@ -267,6 +299,9 @@ class ProductController_Admin {
     }
 
     public function deleteImage($image_id) {
+        // Kiểm tra session
+        $this->checkAdminAuth();
+        
         if ($_POST['action'] == 'delete_image') {
             $product_id = $_POST['product_id'];
             $this->imageModel->deleteImage($image_id);
@@ -275,86 +310,34 @@ class ProductController_Admin {
             exit;
         }
     }
+
     public function updateImageSortOrders() {
-    if ($_POST['action'] == 'update_image_sort_orders') {
-        $product_id = $_POST['product_id'];
-        $sort_orders = $_POST['sort_orders'];
+        // Kiểm tra session
+        $this->checkAdminAuth();
         
-        try {
-            $this->imageModel->updateMultipleSortOrders($sort_orders);
-            $_SESSION['success'] = 'Thứ tự ảnh đã được cập nhật thành công!';
-        } catch (Exception $e) {
-            $_SESSION['error'] = 'Lỗi khi cập nhật thứ tự ảnh: ' . $e->getMessage();
+        if ($_POST['action'] == 'update_image_sort_orders') {
+            $product_id = $_POST['product_id'];
+            $sort_orders = $_POST['sort_orders'];
+            
+            try {
+                $this->imageModel->updateMultipleSortOrders($sort_orders);
+                $_SESSION['success'] = 'Thứ tự ảnh đã được cập nhật thành công!';
+            } catch (Exception $e) {
+                $_SESSION['error'] = 'Lỗi khi cập nhật thứ tự ảnh: ' . $e->getMessage();
+            }
+            
+            header('Location: products.php?action=edit&id=' . $product_id . '#images');
+            exit;
         }
-        
-        header('Location: products.php?action=edit&id=' . $product_id . '#images');
-        exit;
+    }
+
+    private function checkAdminAuth() {
+        if (!isset($_SESSION['admin'])) {
+            header("Location: login.php");
+            exit;
+        }
     }
 }
-}
 
-try {
-    global $conn;
-    
-    if (!$conn) {
-        throw new Exception("Database connection is not available");
-    }
-    
-    $controller = new ProductController_Admin($conn);
-
-    $action = $_GET['action'] ?? 'index';
-    $id = $_GET['id'] ?? null;
-
-    $strict_post_actions = ['store', 'add_variant', 'update_variant', 'delete_variant', 'add_image', 'set_main_image', 'delete_image'];
-    
-    if (in_array($action, $strict_post_actions) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception("Invalid request method for action: " . $action);
-    }
-
-    switch ($action) {
-        case 'create':
-            $controller->create();
-            break;
-        case 'edit':
-            $controller->edit($id);
-            break;
-        case 'store':
-            $controller->store();
-            break;
-        case 'update':
-            $controller->update($id);
-            break;
-        case 'delete':
-            $controller->delete($id);
-            break;
-        case 'add_variant':
-            $controller->addVariant();
-            break;
-        case 'update_variant':
-            $controller->updateVariant($id);
-            break;
-        case 'delete_variant':
-            $controller->deleteVariant($id);
-            break;
-        case 'add_image':
-            $controller->addImage();
-            break;
-        case 'set_main_image':
-            $controller->setMainImage($id);
-            break;
-        case 'delete_image':
-            $controller->deleteImage($id);
-            break;
-        case 'update_image_sort_orders':
-            $controller->updateImageSortOrders();
-            break;
-        default:
-            $controller->index();
-            break;
-    }
-    
-} catch (Exception $e) {
-    echo "<h2>System Error</h2>";
-    echo "<p><strong>Error:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
-}
+// Không tự động chạy controller, chỉ khởi tạo khi được gọi từ file chính
 ?>
