@@ -258,3 +258,133 @@ body {
 .scroll-to-top i {
     font-weight: 800;
 }
+
+
+
+
+
+/* Product Management Styles */
+.product-image-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.variant-table td, .variant-table th {
+    vertical-align: middle;
+}
+
+.image-grid .card {
+    transition: transform 0.2s;
+}
+
+.image-grid .card:hover {
+    transform: translateY(-2px);
+}
+
+.tab-content {
+    min-height: 400px;
+}
+
+/* Badge styles */
+.badge {
+    font-size: 0.75em;
+}
+
+/* Button group styles */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Table responsive */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Modal styles */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Form styles */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Card header tabs */
+/* CSS cho tabs - Trạng thái mặc định */
+.card-header-tabs .nav-link {
+    color: #6c757d; /* Xám đậm */
+    font-weight: normal;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.3s ease;
+}
+
+/* Trạng thái hover */
+.card-header-tabs .nav-link:hover {
+    color: #495057; /* Xám đậm hơn */
+    background-color: transparent;
+}
+
+/* Trạng thái active */
+.card-header-tabs .nav-link.active {
+    color: #000; /* Đen */
+    font-weight: bold;
+    border-bottom-color: #0d6efd; /* Màu xanh cho viền dưới */
+    background-color: transparent;
+}
+
+/* Stock indicators */
+.text-stock-low {
+    color: #dc3545;
+}
+
+.text-stock-medium {
+    color: #ffc107;
+}
+
+.text-stock-high {
+    color: #198754;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Reviews page styles */
+#reviewsTable td {
+    vertical-align: middle;
+}
+
+.delete-review {
+    transition: all 0.3s ease;
+}
+
+.delete-review:hover {
+    transform: scale(1.05);
+}
+
+/* Rating stars */
+.rating-stars {
+    color: #ffc107;
+    font-size: 14px;
+}
+
+/* Table responsive */
+.table-responsive {
+    overflow-x: auto;
+}
