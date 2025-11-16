@@ -128,6 +128,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 cancelButtonText: 'Hủy'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Sửa đường dẫn fetch thành 'reviews.php?action=delete...'
                     fetch('reviews.php?action=delete&review_id=' + reviewId, { 
                         method: "GET" 
                     })
