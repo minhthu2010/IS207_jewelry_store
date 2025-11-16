@@ -25,10 +25,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
         <div id="collapseProducts" class="collapse">
             <div class="collapse-inner">
-                <a class="collapse-item" href="products.php">Tất cả sản phẩm</a>
+                <a class="collapse-item" href="products.php">Danh sách sản phẩm</a>
                 <a class="collapse-item" href="categories.php">Danh mục sản phẩm</a>
             </div>
         </div>
+    </div>
+    
+    <div class="nav-item <?= $current_page == 'reviews.php' ? 'active' : '' ?>">
+        <a class="nav-link" href="reviews.php">
+            <i class="fas fa-fw fa-star"></i>
+            <span>Đánh giá sản phẩm</span>
+        </a>
     </div>
 
     <div class="nav-item <?= $current_page == 'orders.php' ? 'active' : '' ?>">
