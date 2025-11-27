@@ -1,8 +1,10 @@
 <?php
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// BẮT ĐẦU OUTPUT BUFFERING
 ob_start();
 
 // REQUIRE FILES TRƯỚC KHI XỬ LÝ
@@ -141,7 +143,7 @@ class CartController {
         }
 
         try {
-            // SỬ DỤNG MODEL để lấy thông tin variant - ĐÃ SỬA
+            // SỬ DỤNG MODEL để lấy thông tin variant
             $variant = $this->getVariantWithProduct($variant_id);
             
             if (!$variant) {
@@ -175,18 +177,26 @@ class CartController {
                 error_log("Using existing cart: " . $cart_id);
             }
 
-            // Thêm vào giỏ hàng - SỬ DỤNG MODEL
+            // Thêm vào giỏ hàng - SỬ DỤNG MODEL VỚI LOGIC MỚI
             error_log("Adding to cart - Cart: $cart_id, Variant: $variant_id, Quantity: $quantity");
             $result = $this->cartModel->addToCart($cart_id, $variant_id, $quantity);
 
-            if ($result) {
-                $itemCount = $this->cartModel->getCartItemCount($cart_id);
-                error_log("Successfully added to cart. Item count: " . $itemCount);
+            if ($result['success']) {
+                // QUAN TRỌNG: Sử dụng getDistinctCartItemCount để đếm số lượng sản phẩm phân biệt
+                $itemCount = $this->cartModel->getDistinctCartItemCount($cart_id);
+                
+                error_log("Add to cart result - isNewItem: " . ($result['isNewItem'] ? 'YES' : 'NO'));
+                error_log("Item count after add: " . $itemCount);
+                
+                $message = $result['isNewItem'] 
+                    ? 'Đã thêm ' . $variant['product_name'] . ' vào giỏ hàng!' 
+                    : 'Đã cập nhật số lượng ' . $variant['product_name'] . ' trong giỏ hàng!';
                 
                 return [
                     'success' => true,
-                    'message' => 'Đã thêm ' . $variant['product_name'] . ' vào giỏ hàng!',
-                    'itemCount' => $itemCount
+                    'message' => $message,
+                    'itemCount' => $itemCount,
+                    'isNewItem' => $result['isNewItem']
                 ];
             } else {
                 error_log("ERROR: Failed to add to cart");
@@ -228,7 +238,7 @@ class CartController {
         if (!$this->customer_id) return 0;
         
         $cart = $this->cartModel->getCartByCustomerId($this->customer_id);
-        return $cart ? $this->cartModel->getCartItemCount($cart['cart_id']) : 0;
+        return $cart ? $this->cartModel->getDistinctCartItemCount($cart['cart_id']) : 0;
     }
 
     public function getCart() {
@@ -270,7 +280,7 @@ class CartController {
             $result = $this->updateCartItem($item_id, $quantity);
             
             if ($result) {
-                // Lấy số lượng mới cho icon giỏ hàng
+                // Sử dụng distinct count để cập nhật icon
                 $itemCount = $this->getCartItemCount();
                 return [
                     'success' => true,
@@ -294,7 +304,7 @@ class CartController {
             $result = $this->removeCartItem($item_id);
             
             if ($result) {
-                // Lấy số lượng mới cho icon giỏ hàng
+                // Sử dụng distinct count để cập nhật icon
                 $itemCount = $this->getCartItemCount();
                 return [
                     'success' => true,
@@ -308,7 +318,6 @@ class CartController {
             return ['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()];
         }
     }
-
     public function processCheckout() {
         if (!$this->customer_id) {
             $_SESSION['error'] = "Vui lòng đăng nhập để thanh toán";
