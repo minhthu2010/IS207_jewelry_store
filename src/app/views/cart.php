@@ -405,10 +405,7 @@ function updateCartIcon(itemCount) {
         }
     });
 }
-// Định dạng số tiền VNĐ
-function formatCurrency(amount) {
-    return amount.toLocaleString('vi-VN') + '₫';
-}
+
 </script>
 
 <?php include __DIR__ . '/templates/footer.php'; ?>
