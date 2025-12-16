@@ -17,13 +17,6 @@
     margin-bottom: 0;
 }
 
-.table th {
-    background: #f8f9fc;
-    border-bottom: 2px solid #e3e6f0;
-    padding: 12px 15px;
-    font-weight: 600;
-    color: #4e73df;
-}
 
 .table td {
     padding: 12px 15px;
@@ -42,12 +35,41 @@
     font-weight: 600;
 }
 
-.btn-primary {
-    background: #4e73df;
-    border-color: #4e73df;
+/* Custom badge colors */
+.badge-success-custom {
+    background-color: #298a40 !important; /* Màu xanh lá cây */
+    color: white !important;
 }
 
-.btn-primary:hover {
-    background: #2e59d9;
-    border-color: #2653d4;
+.badge-warning-custom {
+    background-color: #ffc107 !important; /* Màu vàng */
+    color: #000 !important;
+}
+
+.badge-danger-custom {
+    background-color: #dc3545 !important; /* Màu đỏ */
+    color: white !important;
+}
+
+/* Style cho các badge trong hướng dẫn */
+.rule-badge {
+    font-weight: bold;
+    padding: 4px 8px;
+}
+
+
+/* Màu cho select payment status */
+.payment-pending {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+.payment-success {
+    background-color: #d4edda !important;
+    color: #103b1a !important;
+}
+
+.payment-failed {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
 }
