@@ -7,9 +7,9 @@ class Admin {
         $this->conn = $db;
     }
 
-    // 🔑 Đăng nhập bằng email hoặc username
+    //  Đăng nhập bằng email hoặc username
     public function login($emailOrUsername, $password) {
-        $query = "SELECT admin_id, fullname, email, username, password 
+        $query = "SELECT admin_id, email, username, password 
                   FROM {$this->table_name}
                   WHERE email = :login OR username = :login
                   LIMIT 1";
@@ -22,7 +22,6 @@ class Admin {
             if (password_verify($password, $row['password'])) {
                 $_SESSION['admin'] = [
                     'admin_id' => $row['admin_id'],
-                    'fullname' => $row['fullname'],
                     'email'    => $row['email'],
                     'username' => $row['username']
                 ];
@@ -32,7 +31,7 @@ class Admin {
         return false;
     }
 
-    // 💾 Lưu token Remember Me
+    //  Lưu token Remember Me
     public function saveToken($admin_id, $token) {
         $query = "UPDATE {$this->table_name} 
                   SET token = :token 
@@ -43,9 +42,9 @@ class Admin {
         return $stmt->execute();
     }
 
-    // 🔍 Lấy admin bằng token (tự động đăng nhập)
+    //  Lấy admin bằng token (tự động đăng nhập)
     public function getAdminByToken($token) {
-        $query = "SELECT admin_id, fullname, email, username 
+        $query = "SELECT admin_id, email, username 
                   FROM {$this->table_name}
                   WHERE token = :token
                   LIMIT 1";
