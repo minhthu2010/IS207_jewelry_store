@@ -479,9 +479,7 @@ function getOrderStatus(status) {
     const map = {
         0: 'Chờ xác nhận',
         1: 'Đã xác nhận',
-        2: 'Đang giao',
-        3: 'Hoàn thành',
-        4: 'Đã hủy'
+        2: 'Đã hủy'
     };
     return map[status] || 'Không xác định';
 }
@@ -498,7 +496,9 @@ async function loadOrderDetail(orderId) {
         document.getElementById('orderDate').textContent = new Date(o.order_date).toLocaleDateString('vi-VN');
         document.getElementById('orderStatus').textContent = getOrderStatus(o.status);
         document.getElementById('paymentMethod').textContent = o.payment_method || 'Không rõ';
-        document.getElementById('paymentStatus').textContent = o.payment_status === 'success' ? 'Đã thanh toán' : 'Chưa thanh toán';
+        document.getElementById('paymentStatus').textContent = 
+                                o.payment_status === 'success' ? 'Đã thanh toán' : 
+                                (o.payment_status === 'pending' ? 'Chờ thanh toán' : 'Thanh toán thất bại');
         document.getElementById('shippingFullname').textContent = o.shipping_fullname;
         document.getElementById('shippingPhone').textContent = o.shipping_phone;
         document.getElementById('shippingAddress').textContent = o.shipping_address;
