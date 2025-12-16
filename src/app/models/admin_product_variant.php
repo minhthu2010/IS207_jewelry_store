@@ -5,7 +5,28 @@ class ProductVariantModel {
     public function __construct($db) {
         $this->conn = $db;
     }
+
+    // Thêm phương thức toggleStatus
+    public function toggleVariantStatus($variant_id, $status) {
+        try {
+            $sql = "UPDATE product_variant SET status = ? WHERE variant_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute([$status, $variant_id]);
+        } catch (PDOException $e) {
+            throw new Exception("Database error in toggleVariantStatus: " . $e->getMessage());
+        }
+    }
+
+    // Cập nhật getVariantsByProduct để chỉ lấy variants có status = 1
     public function getVariantsByProduct($product_id) {
+        $sql = "SELECT * FROM product_variant WHERE product_id = ? AND status = 1 ORDER BY size";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$product_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Thêm phương thức để lấy tất cả variants (kể cả status = 0)
+    public function getAllVariantsByProduct($product_id) {
         $sql = "SELECT * FROM product_variant WHERE product_id = ? ORDER BY size";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$product_id]);
@@ -33,22 +54,25 @@ class ProductVariantModel {
     }
 
     public function updateVariant($variant_id, $data) {
-        $sql = "UPDATE product_variant SET sku = ?, size = ?, price = ?, stock_quantity = ? 
-                WHERE variant_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([
-            $data['sku'],
-            $data['size'],
-            $data['price'],
-            $data['stock_quantity'],
-            $variant_id
-        ]);
-    }
-
-    public function deleteVariant($variant_id) {
-        $sql = "DELETE FROM product_variant WHERE variant_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([$variant_id]);
+        try {
+            $sql = "UPDATE product_variant SET sku = ?, size = ?, price = ?, stock_quantity = ?, status = ? 
+                    WHERE variant_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            
+            $params = [
+                $data['sku'],
+                $data['size'] ?? null,
+                $data['price'],
+                $data['stock_quantity'],
+                $data['status'] ?? 1,
+                $variant_id
+            ];
+            
+            return $stmt->execute($params);
+            
+        } catch (PDOException $e) {
+            throw new Exception("Database error in updateVariant: " . $e->getMessage());
+        }
     }
 
     public function variantExists($sku, $exclude_variant_id = null) {
