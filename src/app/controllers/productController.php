@@ -51,16 +51,15 @@ class productController {
         }
     }
 
-    // CẬP NHẬT METHOD XỬ LÝ FILTERS
     private function getFiltersFromRequest() {
         $filters = [];
 
-        // Category filter
-        if (!empty($_GET['category'])) {
+        // Category filter - chỉ lấy nếu có trong URL
+        if (isset($_GET['category']) && $_GET['category'] !== '') {
             $filters['category'] = $_GET['category'];
         }
 
-        // Tags filter (có thể chọn nhiều tags)
+        // Tags filter (có thể chọn nhiều tags) - chỉ lấy nếu có trong URL
         if (!empty($_GET['tags'])) {
             if (is_array($_GET['tags'])) {
                 $filters['tags'] = $_GET['tags'];
@@ -69,23 +68,24 @@ class productController {
             }
         }
 
-        // Price filter
-        if (!empty($_GET['min_price']) && !empty($_GET['max_price'])) {
+        // Price filter - CHỈ lấy khi có cả min và max VÀ khi form price được submit
+        // Thêm một hidden input để xác định khi nào price filter được áp dụng
+        if (!empty($_GET['price_filter_applied']) && $_GET['price_filter_applied'] === '1' 
+            && !empty($_GET['min_price']) && !empty($_GET['max_price'])) {
             $filters['min_price'] = floatval($_GET['min_price']);
             $filters['max_price'] = floatval($_GET['max_price']);
+            $filters['price_filter_applied'] = true;
         }
 
-        // Sort filter - QUAN TRỌNG: Đảm bảo lấy đúng parameter
+        // Sort filter
         if (!empty($_GET['sort'])) {
             $filters['sort'] = $_GET['sort'];
         } else {
-            $filters['sort'] = 'newest'; // Mặc định
+            $filters['sort'] = 'newest';
         }
 
         return $filters;
     }
-
-    
 
     public function detail($id) {
         try {
@@ -93,21 +93,24 @@ class productController {
             $cartItemCount = $this->getCartItemCount();
             
             if ($product) {
-                // Lấy variants, images VÀ REVIEWS
+                // Lấy variants, images và reviews
                 $product['variants'] = $this->productModel->getVariantsByProduct($id);
                 $product['images'] = $this->productModel->getProductImages($id);
-                $product['reviews'] = $this->productModel->getProductReviews($id); // THÊM DÒNG NÀY
+                $product['reviews'] = $this->productModel->getProductReviews($id);
                 
-                // Tính rating trung bình và số lượng review
-                $product['average_rating'] = $this->calculateAverageRating($product['reviews']);
-                $product['review_count'] = count($product['reviews']);
+                // Lấy rating summary
+                $ratingSummary = $this->productModel->getProductRatingSummary($id);
+                $product = array_merge($product, $ratingSummary);
                 
-                // DEBUG
-                error_log("Product Detail - ID: $id");
-                error_log("Product Name: " . ($product['name'] ?? 'N/A'));
-                error_log("Variants Count: " . count($product['variants']));
-                error_log("Images Count: " . count($product['images']));
-                error_log("Reviews Count: " . count($product['reviews']));
+                // Kiểm tra xem user đã login có thể review không
+                if (isset($_SESSION['customer'])) {
+                    $customerId = $_SESSION['customer']['cus_id'];
+                    $product['can_review'] = $this->productModel->canCustomerReviewProduct($customerId, $id);
+                    $product['user_review'] = $this->productModel->getUserReviewForProduct($customerId, $id);
+                } else {
+                    $product['can_review'] = false;
+                    $product['user_review'] = null;
+                }
                 
                 include __DIR__ . '/../views/product_detail.php';
             } else {
@@ -119,7 +122,6 @@ class productController {
         }
     }
 
-    // THÊM METHOD TÍNH RATING TRUNG BÌNH
     private function calculateAverageRating($reviews) {
         if (empty($reviews)) return 0;
         
@@ -131,7 +133,6 @@ class productController {
         return round($totalRating / count($reviews), 1);
     }
 
-    // Lấy số lượng sản phẩm trong giỏ hàng
     private function getCartItemCount() {
         if (isset($_SESSION['customer']['cus_id'])) {
             $cart = $this->cartModel->getCartByCustomerId($_SESSION['customer']['cus_id']);
