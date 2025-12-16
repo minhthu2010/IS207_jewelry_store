@@ -65,15 +65,14 @@ include __DIR__ . '/templates/topbar.php';
                         <div class="col-md-3">
                             <label class="form-label">Loại lọc</label>
                             <select name="filter_type" class="form-control" id="filterType">
-                                <option value="">-- Chọn loại lọc --</option>
-                                <option value="month" <?= isset($_GET['filter_type']) && $_GET['filter_type'] == 'month' ? 'selected' : '' ?>>Theo tháng</option>
-                                <option value="year" <?= isset($_GET['filter_type']) && $_GET['filter_type'] == 'year' ? 'selected' : '' ?>>Theo năm</option>
-                                <option value="month_year" <?= isset($_GET['filter_type']) && $_GET['filter_type'] == 'month_year' ? 'selected' : '' ?>>Theo tháng và năm</option>
+                                <option value="month_year" <?= $filterType == 'month_year' ? 'selected' : '' ?>>Tháng và năm</option>
+                                <option value="month" <?= $filterType == 'month' ? 'selected' : '' ?>>Theo tháng</option>
+                                <option value="year" <?= $filterType == 'year' ? 'selected' : '' ?>>Theo năm</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Tháng</label>
-                            <select name="month" class="form-control" id="monthSelect" disabled>
+                            <select name="month" class="form-control" id="monthSelect">
                                 <option value="">Chọn tháng</option>
                                 <?php for($i = 1; $i <= 12; $i++): ?>
                                     <option value="<?= sprintf('%02d', $i) ?>" 
@@ -85,7 +84,7 @@ include __DIR__ . '/templates/topbar.php';
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Năm</label>
-                            <select name="year" class="form-control" id="yearSelect" disabled>
+                            <select name="year" class="form-control" id="yearSelect">
                                 <option value="">Chọn năm</option>
                                 <?php foreach($years as $year): ?>
                                     <option value="<?= $year['year'] ?>" 
@@ -97,8 +96,9 @@ include __DIR__ . '/templates/topbar.php';
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>
-                                <i class="fas fa-filter"></i> Lọc
+                            <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                                <i class="fas fa-filter"></i> 
+                                <span id="submitText">Lọc</span>
                             </button>
                         </div>
                     </form>
@@ -247,100 +247,206 @@ document.addEventListener('DOMContentLoaded', function() {
     const monthSelect = document.getElementById('monthSelect');
     const yearSelect = document.getElementById('yearSelect');
     const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
     const filterForm = document.getElementById('filterForm');
-
-    // Xử lý khi thay đổi loại lọc
-    filterType.addEventListener('change', function() {
-        const selectedType = this.value;
-        
-        // Reset và disable tất cả
-        monthSelect.disabled = true;
-        yearSelect.disabled = true;
-        monthSelect.value = '';
-        yearSelect.value = '';
-        submitBtn.disabled = true;
-
-        // Kích hoạt các trường tương ứng
-        switch(selectedType) {
-            case 'month':
-                monthSelect.disabled = false;
-                break;
-            case 'year':
-                yearSelect.disabled = false;
-                break;
-            case 'month_year':
-                monthSelect.disabled = false;
-                yearSelect.disabled = false;
-                break;
-        }
-
-        // Kích hoạt nút submit nếu có chọn loại lọc
-        if (selectedType) {
-            submitBtn.disabled = false;
-        }
-    });
-
-    // Xử lý khi thay đổi giá trị trong select
+    
+    // Biến để theo dõi trạng thái ban đầu
+    const isFirstLoad = <?= !isset($_GET['filter_type']) ? 'true' : 'false' ?>;
+    
+    // Hàm kiểm tra và cập nhật trạng thái form
     function validateForm() {
         const filterTypeValue = filterType.value;
         const monthValue = monthSelect.value;
         const yearValue = yearSelect.value;
         
-        let isValid = true;
+        let isValid = false;
+        let errorMessage = 'Vui lòng chọn: ';
+        
+        // Xóa trạng thái lỗi cũ
+        monthSelect.classList.remove('is-invalid');
+        yearSelect.classList.remove('is-invalid');
         
         switch(filterTypeValue) {
             case 'month':
-                isValid = monthValue !== '';
+                if (monthValue !== '') {
+                    isValid = true;
+                } else {
+                    errorMessage += 'tháng';
+                    monthSelect.classList.add('is-invalid');
+                }
                 break;
             case 'year':
-                isValid = yearValue !== '';
+                if (yearValue !== '') {
+                    isValid = true;
+                } else {
+                    errorMessage += 'năm';
+                    yearSelect.classList.add('is-invalid');
+                }
                 break;
             case 'month_year':
-                isValid = monthValue !== '' && yearValue !== '';
+                if (monthValue !== '' && yearValue !== '') {
+                    isValid = true;
+                } else {
+                    if (monthValue === '' && yearValue === '') {
+                        errorMessage += 'tháng và năm';
+                        monthSelect.classList.add('is-invalid');
+                        yearSelect.classList.add('is-invalid');
+                    } else if (monthValue === '') {
+                        errorMessage += 'tháng';
+                        monthSelect.classList.add('is-invalid');
+                    } else {
+                        errorMessage += 'năm';
+                        yearSelect.classList.add('is-invalid');
+                    }
+                }
                 break;
-            default:
-                isValid = false;
         }
         
+        // Cập nhật trạng thái nút
         submitBtn.disabled = !isValid;
+        
+        // Cập nhật text nút
+        if (!isValid) {
+            submitBtn.title = errorMessage;
+            submitText.textContent = 'Vui lòng chọn';
+        } else {
+            submitBtn.title = 'Nhấn để lọc dữ liệu';
+            submitText.textContent = 'Lọc';
+        }
+        
+        return isValid;
     }
 
-    monthSelect.addEventListener('change', validateForm);
-    yearSelect.addEventListener('change', validateForm);
+    // Hàm cập nhật trạng thái các trường nhập
+    function updateFieldStates(resetValues = true) {
+        const selectedType = filterType.value;
+        
+        // Reset giá trị nếu cần
+        if (resetValues) {
+            if (selectedType === 'month') {
+                yearSelect.value = '';
+            } else if (selectedType === 'year') {
+                monthSelect.value = '';
+            } else if (selectedType === 'month_year') {
+                // Không reset khi đang ở chế độ month_year
+            }
+        }
+        
+        // Cập nhật trạng thái disabled
+        switch(selectedType) {
+            case 'month':
+                // Chỉ cần tháng, năm bị disabled
+                yearSelect.disabled = true;
+                monthSelect.disabled = false;
+                break;
+            case 'year':
+                // Chỉ cần năm, tháng bị disabled
+                monthSelect.disabled = true;
+                yearSelect.disabled = false;
+                break;
+            case 'month_year':
+                // Cần cả tháng và năm
+                monthSelect.disabled = false;
+                yearSelect.disabled = false;
+                break;
+        }
+        
+        // Validate form
+        validateForm();
+    }
 
-    // Khởi tạo trạng thái ban đầu dựa trên giá trị hiện tại
+    // Xử lý khi thay đổi loại lọc
+    filterType.addEventListener('change', function() {
+        // Reset các giá trị khi thay đổi loại lọc
+        updateFieldStates(true);
+        
+        // Focus vào trường cần chọn
+        if (this.value === 'month') {
+            monthSelect.focus();
+        } else if (this.value === 'year') {
+            yearSelect.focus();
+        } else if (this.value === 'month_year') {
+            monthSelect.focus();
+        }
+    });
+
+    // Xử lý khi thay đổi giá trị trong select
+    monthSelect.addEventListener('change', function() {
+        validateForm();
+    });
+    
+    yearSelect.addEventListener('change', function() {
+        validateForm();
+    });
+
+    // Khởi tạo trạng thái ban đầu
     function initializeForm() {
-        const currentFilterType = '<?= isset($_GET['filter_type']) ? $_GET['filter_type'] : '' ?>';
+        const currentFilterType = '<?= $filterType ?>';
         const currentMonth = '<?= $filterMonth ?>';
         const currentYear = '<?= $filterYear ?>';
         
-        if (currentFilterType) {
-            filterType.value = currentFilterType;
+        if (isFirstLoad) {
+            // Lần đầu load: mặc định là "Tháng và năm"
+            filterType.value = 'month_year';
             
-            // Kích hoạt các trường tương ứng
-            switch(currentFilterType) {
-                case 'month':
-                    monthSelect.disabled = false;
-                    if (currentMonth) monthSelect.value = currentMonth;
-                    break;
-                case 'year':
-                    yearSelect.disabled = false;
-                    if (currentYear) yearSelect.value = currentYear;
-                    break;
-                case 'month_year':
-                    monthSelect.disabled = false;
-                    yearSelect.disabled = false;
-                    if (currentMonth) monthSelect.value = currentMonth;
-                    if (currentYear) yearSelect.value = currentYear;
-                    break;
+            // Đặt giá trị mặc định cho tháng và năm hiện tại
+            if (!monthSelect.value && currentMonth) {
+                monthSelect.value = currentMonth;
+            }
+            if (!yearSelect.value && currentYear) {
+                yearSelect.value = currentYear;
             }
             
-            validateForm();
+            // Kích hoạt cả 2 trường và nút lọc
+            monthSelect.disabled = false;
+            yearSelect.disabled = false;
+            submitBtn.disabled = false;
+            submitText.textContent = 'Lọc';
+        } else {
+            // Đã có filter từ URL: giữ nguyên giá trị
+            filterType.value = currentFilterType;
+            
+            // Cập nhật trạng thái disabled mà KHÔNG reset giá trị
+            updateFieldStates(false);
         }
+        
+        // Validate form cuối cùng
+        validateForm();
     }
 
     initializeForm();
 
+    // Ngăn submit form khi nút bị disabled
+    filterForm.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Hiển thị thông báo lỗi và focus vào trường cần nhập
+            if (filterType.value === 'month' && !monthSelect.value) {
+                monthSelect.focus();
+            } else if (filterType.value === 'year' && !yearSelect.value) {
+                yearSelect.focus();
+            } else if (filterType.value === 'month_year' && (!monthSelect.value || !yearSelect.value)) {
+                if (!monthSelect.value) monthSelect.focus();
+                else yearSelect.focus();
+            }
+            return false;
+        }
+        
+        // Lưu trạng thái trước khi submit (để giữ nguyên trạng thái disabled)
+        const currentFilterType = filterType.value;
+        
+        // Thêm hiệu ứng loading (tùy chọn)
+        submitBtn.classList.add('btn-loading');
+        submitText.textContent = 'Đang xử lý...';
+        
+        // Tạm thời cho phép submit
+        // Sau khi submit, server sẽ trả về với các giá trị đã chọn
+        // và trạng thái disabled sẽ được giữ nguyên
+    });
+    
+    // ... phần chart code giữ nguyên ...
     const ctx = document.getElementById('revenueChart').getContext('2d');
     const revenueData = <?= json_encode(array_values($revenueChart)) ?>;
     const chartLabels = <?= json_encode($chartLabels) ?>;
@@ -389,6 +495,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 }
+            }
+        }  
+    });
+    
+    // Sau khi trang load xong, đảm bảo trạng thái disabled được giữ nguyên
+    window.addEventListener('load', function() {
+        // Nếu có filter_type trong URL (đã submit form), giữ nguyên trạng thái disabled
+        if (!isFirstLoad) {
+            const currentFilterType = filterType.value;
+            
+            switch(currentFilterType) {
+                case 'month':
+                    yearSelect.disabled = true;
+                    monthSelect.disabled = false;
+                    break;
+                case 'year':
+                    monthSelect.disabled = true;
+                    yearSelect.disabled = false;
+                    break;
+                case 'month_year':
+                    monthSelect.disabled = false;
+                    yearSelect.disabled = false;
+                    break;
             }
         }
     });
