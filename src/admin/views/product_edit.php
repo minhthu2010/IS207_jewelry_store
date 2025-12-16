@@ -8,7 +8,22 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
 
 <div class="container-fluid">
     <h1 class="h3 mb-4 text-gray-800">Sửa sản phẩm: <?= htmlspecialchars($product['name']) ?></h1>
+        <!-- Hiển thị thông báo -->
+    <?php if (isset($_SESSION['success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= $_SESSION['success'] ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
 
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= $_SESSION['error'] ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
     <div class="card shadow">
         <div class="card-header">
             <ul class="nav nav-tabs card-header-tabs">
@@ -84,6 +99,19 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
                                     <label class="form-check-label" for="has_size">Sản phẩm có nhiều size</label>
                                     <small class="text-muted d-block">(Xác định bởi danh mục - Không thể thay đổi)</small>
                                 </div>
+                                
+                                <!-- Thêm toggle status cho sản phẩm -->
+                                <div class="mb-3">
+                                    <label class="form-label">Trạng thái sản phẩm</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="product_status" 
+                                            id="product_status" value="1" <?= $product['status'] == 1 ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="product_status">
+                                            <span id="status_text"><?= $product['status'] == 1 ? 'Đang bán' : 'Ngừng bán' ?></span>
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">Bật/tắt trạng thái bán sản phẩm này</small>
+                                </div>
                             </div>
                         </div>
                         
@@ -98,7 +126,11 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
 
                 <!-- Tab 2: Variants -->
                 <div class="tab-pane fade" id="tab2">
-                    <?php if (count($variants) > 1 || $product['category_has_size']): ?>
+                    <?php 
+                    // Sử dụng getAllVariantsByProduct để lấy cả variants đã ngừng bán
+                    $allVariants = $this->variantModel->getAllVariantsByProduct($product['pro_id']);
+                    ?>
+                    <?php if (count($allVariants) > 1 || $product['category_has_size']): ?>                
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>Quản lý Phiên bản sản phẩm</h5>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addVariantModal">
@@ -112,12 +144,13 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
                                     <th>SKU</th>
                                     <th>Giá</th>
                                     <th>Số lượng kho</th>
+                                    <th>Trạng thái</th>
                                     <th>Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($variants as $variant): ?>
-                                    <tr>
+                                <?php foreach ($allVariants as $variant): ?>
+                                    <tr class="<?= $variant['status'] == 0 ? 'table-secondary' : '' ?>">
                                         <td><?= htmlspecialchars($variant['size'] ?? 'N/A') ?></td>
                                         <td><?= htmlspecialchars($variant['sku']) ?></td>
                                         <td class="fw-bold text-success">
@@ -127,31 +160,34 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
                                             <?= number_format($variant['stock_quantity'], 0, ',', '.') ?>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-warning btn-sm" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#editVariantModal"
-                                                    data-variant-id="<?= $variant['variant_id'] ?>"
-                                                    data-size="<?= htmlspecialchars($variant['size'] ?? '') ?>"
-                                                    data-sku="<?= htmlspecialchars($variant['sku']) ?>"
-                                                    data-price="<?= $variant['price'] ?>"
-                                                    data-stock="<?= $variant['stock_quantity'] ?>">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <form method="POST" action="products.php?action=delete_variant&id=<?= $variant['variant_id'] ?>" 
-                                                  class="d-inline" onsubmit="return confirm('Xóa Phiên bản sản phẩm này?')">
-                                                <input type="hidden" name="action" value="delete_variant">
-                                                <input type="hidden" name="product_id" value="<?= $product['pro_id'] ?>">
-                                                <button type="submit" class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-trash"></i>
+                                            <span class="badge <?= $variant['status'] == 1 ? 'bg-success' : 'bg-secondary' ?>">
+                                                <?= $variant['status'] == 1 ? 'Đang bán' : 'Ngừng bán' ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <!-- CHO PHÉP NHẤN SỬA NGAY CẢ KHI VARIANT ĐÃ NGỪNG BÁN -->
+                                                <button type="button" class="btn btn-warning btn-sm" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#editVariantModal"
+                                                        data-variant-id="<?= $variant['variant_id'] ?>"
+                                                        data-size="<?= htmlspecialchars($variant['size'] ?? '') ?>"
+                                                        data-sku="<?= htmlspecialchars($variant['sku']) ?>"
+                                                        data-price="<?= $variant['price'] ?>"
+                                                        data-stock="<?= $variant['stock_quantity'] ?>"
+                                                        data-status="<?= $variant['status'] ?>">
+                                                    <i class="fas fa-edit"></i> Sửa
                                                 </button>
-                                            </form>
+                                                
+                                                <!-- BỎ NÚT TOGGLE STATUS Ở ĐÂY -->
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
                     <?php else: ?>
-                        <?php $variant = $variants[0] ?? null; ?>
+                        <?php $variant = $allVariants[0] ?? null; ?>
                         <?php if ($variant): ?>
                             <div class="row">
                                 <div class="col-md-4">
@@ -172,6 +208,12 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
                                         <input type="text" value="<?= number_format($variant['stock_quantity'], 0, ',', '.') ?>" class="form-control" readonly>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Trạng thái</label>
+                                <span class="badge <?= $variant['status'] == 1 ? 'bg-success' : 'bg-secondary' ?> ms-2">
+                                    <?= $variant['status'] == 1 ? 'Đang bán' : 'Ngừng bán' ?>
+                                </span>
                             </div>
                             <small class="text-muted">Sản phẩm không có size - Thông tin phiên bản sản phẩm được tạo tự động</small>
                         <?php endif; ?>
@@ -349,6 +391,19 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
                         <label class="form-label">Số lượng kho *</label>
                         <input type="number" name="stock_quantity" id="edit_stock" class="form-control" required min="0">
                     </div>
+                    
+                    <!-- Sửa phần toggle status cho variant -->
+                    <div class="mb-3">
+                        <label class="form-label">Trạng thái</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="variant_status" 
+                                   id="edit_variant_status" value="1">
+                            <label class="form-check-label" for="edit_variant_status" id="edit_variant_status_label">
+                                Đang bán
+                            </label>
+                        </div>
+                        <small class="text-muted">Bật/tắt trạng thái bán phiên bản này</small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -361,6 +416,8 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    
     const tabLinks = document.querySelectorAll('.card-header-tabs .nav-link');
     
     tabLinks.forEach(link => {
@@ -395,6 +452,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Cập nhật text khi toggle status thay đổi
+    const statusCheckbox = document.getElementById('product_status');
+    const statusText = document.getElementById('status_text');
+    
+    if (statusCheckbox && statusText) {
+        statusCheckbox.addEventListener('change', function() {
+            statusText.textContent = this.checked ? 'Đang bán' : 'Ngừng bán';
+        });
+    }
+
     const editVariantModal = document.getElementById('editVariantModal');
     if (editVariantModal) {
         editVariantModal.addEventListener('show.bs.modal', function(event) {
@@ -404,14 +471,35 @@ document.addEventListener('DOMContentLoaded', function() {
             const sku = button.getAttribute('data-sku');
             const price = button.getAttribute('data-price');
             const stock = button.getAttribute('data-stock');
-
+            const status = button.getAttribute('data-status'); // Lấy status từ data attribute
+            
+            // Điền dữ liệu vào form
             document.getElementById('edit_variant_id').value = variantId;
-            document.getElementById('edit_size').value = size;
-            document.getElementById('edit_sku').value = sku;
-            document.getElementById('edit_price').value = price;
-            document.getElementById('edit_stock').value = stock;
+            document.getElementById('edit_size').value = size || '';
+            document.getElementById('edit_sku').value = sku || '';
+            document.getElementById('edit_price').value = price || '';
+            document.getElementById('edit_stock').value = stock || '';
+            
+            // Set trạng thái checkbox
+            const statusCheckbox = document.getElementById('edit_variant_status');
+            const statusLabel = document.getElementById('edit_variant_status_label');
+            if (statusCheckbox) {
+                statusCheckbox.checked = (status == '1'); // So sánh với chuỗi '1'
+                statusLabel.textContent = (status == '1') ? 'Đang bán' : 'Ngừng bán';
+            }
 
+            // Cập nhật action của form
             document.getElementById('editVariantForm').action = `products.php?action=update_variant&id=${variantId}`;
+        });
+    }
+
+    // Cập nhật label khi toggle status thay đổi trong modal
+    const variantStatusCheckbox = document.getElementById('edit_variant_status');
+    const variantStatusLabel = document.getElementById('edit_variant_status_label');
+    
+    if (variantStatusCheckbox && variantStatusLabel) {
+        variantStatusCheckbox.addEventListener('change', function() {
+            variantStatusLabel.textContent = this.checked ? 'Đang bán' : 'Ngừng bán';
         });
     }
 
@@ -422,6 +510,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Hàm toggle status cho sản phẩm
+function toggleProductStatus(checkbox) {
+    const statusText = document.getElementById('status_text');
+    if (checkbox.checked) {
+        statusText.textContent = 'Đang bán';
+    } else {
+        statusText.textContent = 'Ngừng bán';
+    }
+}
 
 
 // Sort order functionality
