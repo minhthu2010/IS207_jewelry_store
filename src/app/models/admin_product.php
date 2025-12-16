@@ -6,6 +6,18 @@ class ProductModel_Admin {
         $this->conn = $db;
     }
 
+    // Thêm phương thức toggleStatus
+    public function toggleProductStatus($product_id, $status) {
+        try {
+            $sql = "UPDATE product SET status = ?, updated_at = NOW() WHERE pro_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute([$status, $product_id]);
+        } catch (PDOException $e) {
+            throw new Exception("Database error in toggleProductStatus: " . $e->getMessage());
+        }
+    }
+
+    // Cập nhật getAllProducts để bao gồm status
     public function getAllProducts($filters = []) {
         try {
             $sql = "SELECT p.*, c.name as category_name, c.has_size as category_has_size,
@@ -39,6 +51,12 @@ class ProductModel_Admin {
                 } else {
                     $sql .= " AND (c.has_size = 0 OR c.has_size IS NULL)";
                 }
+            }
+
+            // Lọc theo trạng thái
+            if (isset($filters['status']) && $filters['status'] !== '') {
+                $sql .= " AND p.status = ?";
+                $params[] = $filters['status'];
             }
 
             // Lọc theo tình trạng stock
@@ -128,7 +146,7 @@ class ProductModel_Admin {
 
     public function updateProduct($product_id, $data) {
         try {
-            $sql = "UPDATE product SET name = ?, description = ?, category_id = ?, warranty_id = ?, updated_at = NOW() 
+            $sql = "UPDATE product SET name = ?, description = ?, category_id = ?, warranty_id = ?, status = ?, updated_at = NOW() 
                     WHERE pro_id = ?";
             $stmt = $this->conn->prepare($sql);
             
@@ -137,6 +155,7 @@ class ProductModel_Admin {
                 $data['description'],
                 $data['category_id'],
                 $data['warranty_id'],
+                $data['status'] ?? 1,
                 $product_id
             ];
             
@@ -147,11 +166,6 @@ class ProductModel_Admin {
         }
     }
 
-    public function deleteProduct($product_id) {
-        $sql = "DELETE FROM product WHERE pro_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([$product_id]);
-    }
 
     public function getCategories() {
         try {
