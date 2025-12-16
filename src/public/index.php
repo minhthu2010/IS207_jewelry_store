@@ -24,6 +24,14 @@ switch ($action) {
         $controller->list();
         break;
 
+    case 'brand':
+        require_once __DIR__ . '/../app/views/brand.php';
+        break;
+
+    case 'policy':
+        require_once __DIR__ . '/../app/views/policy.php';
+        break;
+
     case 'detail':
         require_once __DIR__ . '/../app/controllers/productController.php';
         $controller = new productController($conn);
@@ -109,33 +117,7 @@ switch ($action) {
             exit;
         }
 
-        $accountAction = $_GET['sub_action'] ?? 'view';
-        switch ($accountAction) {
-            case 'update':
-                require_once __DIR__ . '/../app/controllers/updateCustomerController.php';
-                $controller = new UpdateCustomerController($conn);
-                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    $controller->update();
-                } else {
-                    include __DIR__ . '/../app/views/account.php';
-                }
-                break;
-
-            case 'change_password':
-                require_once __DIR__ . '/../app/controllers/changePasswordController.php';
-                $controller = new ChangePasswordController($conn);
-                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    $controller->changePassword();
-                } else {
-                    include __DIR__ . '/../app/views/account.php';
-                }
-                break;
-
-            case 'view':
-            default:
-                include __DIR__ . '/../app/views/account.php';
-                break;
-        }
+        include __DIR__ . '/../app/views/account.php';
         break;
 
     case 'forgot_password':
