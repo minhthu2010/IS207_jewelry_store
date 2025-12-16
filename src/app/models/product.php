@@ -23,6 +23,7 @@ class ProductModel {
                 LEFT JOIN category c ON p.category_id = c.cate_id
                 LEFT JOIN product_variant pv ON p.pro_id = pv.product_id
                 LEFT JOIN product_image pi ON p.pro_id = pi.product_id AND pi.sort_order = 0
+                WHERE p.status = 1  -- THÊM ĐIỀU KIỆN CHỈ LẤY SẢN PHẨM ĐANG BÁN
                 GROUP BY p.pro_id, p.name, p.description, c.name, c.has_size, pi.image_url
                 ORDER BY p.created_at DESC
             ";
@@ -54,7 +55,8 @@ class ProductModel {
                 LEFT JOIN category c ON p.category_id = c.cate_id
                 LEFT JOIN product_variant pv ON p.pro_id = pv.product_id
                 LEFT JOIN product_image pi ON p.pro_id = pi.product_id AND pi.sort_order = 0
-                WHERE p.category_id = :category_id
+                WHERE p.category_id = :category_id 
+                AND p.status = 1  -- THÊM ĐIỀU KIỆN CHỈ LẤY SẢN PHẨM ĐANG BÁN
                 GROUP BY p.pro_id, p.name, p.description, c.name, c.has_size, pi.image_url
                 ORDER BY p.created_at DESC
             ";
@@ -95,7 +97,8 @@ class ProductModel {
                 FROM product p
                 LEFT JOIN category c ON p.category_id = c.cate_id
                 LEFT JOIN warranty w ON p.warranty_id = w.w_id
-                WHERE p.pro_id = :product_id
+                WHERE p.pro_id = :product_id 
+                AND p.status = 1  -- THÊM ĐIỀU KIỆN CHỈ LẤY SẢN PHẨM ĐANG BÁN
             ";
             
             $stmt = $this->conn->prepare($query);
@@ -120,6 +123,7 @@ class ProductModel {
                     stock_quantity
                 FROM product_variant 
                 WHERE product_id = :product_id 
+                AND status = 1  -- THÊM ĐIỀU KIỆN CHỈ LẤY VARIANT ĐANG BÁN
                 ORDER BY price ASC
             ";
             
@@ -252,6 +256,7 @@ class ProductModel {
                     FROM product p
                     LEFT JOIN product_variant pv ON p.pro_id = pv.product_id
                     WHERE pv.price > 0
+                    AND p.status = 1  -- THÊM ĐIỀU KIỆN CHỈ LẤY SẢN PHẨM ĐANG BÁN
                     GROUP BY p.pro_id
                 ) as product_min_prices
             ";
@@ -272,99 +277,94 @@ class ProductModel {
 
     // CẬP NHẬT METHOD LỌC SẢN PHẨM VỚI TAGS
     public function getFilteredProducts($filters = []) {
-    try {
-        $whereConditions = [];
-        $params = [];
-        $havingConditions = [];
+        try {
+            $whereConditions = ["p.status = 1"];
+            $params = [];
+            $havingConditions = [];
 
-        // Base query - LẤY GIÁ THẤP NHẤT
-        $query = "
-            SELECT 
-                p.pro_id,
-                p.name,
-                p.description,
-                c.name as category_name,
-                c.has_size,
-                MIN(pv.price) as min_price,
-                MAX(pv.price) as max_price,
-                pi.image_url,
-                COUNT(DISTINCT pv.variant_id) as variant_count,
-                GROUP_CONCAT(DISTINCT pt.tag_name) as tags
-            FROM product p
-            LEFT JOIN category c ON p.category_id = c.cate_id
-            LEFT JOIN product_variant pv ON p.pro_id = pv.product_id
-            LEFT JOIN product_image pi ON p.pro_id = pi.product_id AND pi.sort_order = 0
-            LEFT JOIN product_tags pt ON p.pro_id = pt.product_id
-        ";
+            // Base query - LẤY GIÁ THẤP NHẤT
+            $query = "
+                SELECT 
+                    p.pro_id,
+                    p.name,
+                    p.description,
+                    c.name as category_name,
+                    c.has_size,
+                    MIN(pv.price) as min_price,
+                    MAX(pv.price) as max_price,
+                    pi.image_url,
+                    COUNT(DISTINCT pv.variant_id) as variant_count,
+                    GROUP_CONCAT(DISTINCT pt.tag_name) as tags
+                FROM product p
+                LEFT JOIN category c ON p.category_id = c.cate_id
+                LEFT JOIN product_variant pv ON p.pro_id = pv.product_id
+                LEFT JOIN product_image pi ON p.pro_id = pi.product_id AND pi.sort_order = 0
+                LEFT JOIN product_tags pt ON p.pro_id = pt.product_id
+            ";
 
-        // Áp dụng category filter
-        if (!empty($filters['category'])) {
-            $whereConditions[] = "p.category_id = :category";
-            $params[':category'] = $filters['category'];
-        }
-
-        // Áp dụng tag filter
-        if (!empty($filters['tags'])) {
-            $tagConditions = [];
-            foreach ($filters['tags'] as $index => $tag) {
-                $tagConditions[] = "pt.tag_name = :tag_{$index}";
-                $params[":tag_{$index}"] = $tag;
+            // Áp dụng category filter
+            if (!empty($filters['category'])) {
+                $whereConditions[] = "p.category_id = :category";
+                $params[':category'] = $filters['category'];
             }
-            $whereConditions[] = "(" . implode(" OR ", $tagConditions) . ")";
+
+            // Áp dụng tag filter
+            if (!empty($filters['tags'])) {
+                $tagConditions = [];
+                foreach ($filters['tags'] as $index => $tag) {
+                    $tagConditions[] = "pt.tag_name = :tag_{$index}";
+                    $params[":tag_{$index}"] = $tag;
+                }
+                $whereConditions[] = "(" . implode(" OR ", $tagConditions) . ")";
+            }
+
+            // Thêm điều kiện WHERE nếu có
+            if (!empty($whereConditions)) {
+                $query .= " WHERE " . implode(" AND ", $whereConditions);
+            }
+
+            // Group
+            $query .= " GROUP BY p.pro_id, p.name, p.description, c.name, c.has_size, pi.image_url";
+
+            // Price filter - CHỈ áp dụng khi có price_filter_applied = true
+            if (!empty($filters['price_filter_applied']) && !empty($filters['min_price']) && !empty($filters['max_price'])) {
+                $havingConditions[] = "MIN(pv.price) BETWEEN :min_price AND :max_price";
+                $params[':min_price'] = $filters['min_price'];
+                $params[':max_price'] = $filters['max_price'];
+            }
+
+            // Thêm điều kiện HAVING nếu có
+            if (!empty($havingConditions)) {
+                $query .= " HAVING " . implode(" AND ", $havingConditions);
+            }
+
+            // Xử lý sorting
+            $sort = $filters['sort'] ?? 'newest';
+            switch ($sort) {
+                case 'price_low':
+                    $query .= " ORDER BY min_price ASC";
+                    break;
+                case 'price_high':
+                    $query .= " ORDER BY min_price DESC";
+                    break;
+                case 'name':
+                    $query .= " ORDER BY p.name ASC";
+                    break;
+                case 'newest':
+                default:
+                    $query .= " ORDER BY p.pro_id DESC";
+                    break;
+            }
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute($params);
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("ProductModel getFilteredProducts Error: " . $e->getMessage());
+            return [];
         }
-
-        // Price filter - Áp dụng trên giá thấp nhất
-        if (!empty($filters['min_price']) && !empty($filters['max_price'])) {
-            $havingConditions[] = "MIN(pv.price) BETWEEN :min_price AND :max_price";
-            $params[':min_price'] = $filters['min_price'];
-            $params[':max_price'] = $filters['max_price'];
-        }
-
-        // Thêm điều kiện WHERE nếu có
-        if (!empty($whereConditions)) {
-            $query .= " WHERE " . implode(" AND ", $whereConditions);
-        }
-
-
-        // Group
-        $query .= " GROUP BY p.pro_id, p.name, p.description, c.name, c.has_size, pi.image_url";
-
-        // Thêm điều kiện HAVING nếu có
-        if (!empty($havingConditions)) {
-            $query .= " HAVING " . implode(" AND ", $havingConditions);
-        }
-
-        // Xử lý sorting - CẬP NHẬT THEO TIẾNG VIỆT
-        $sort = $filters['sort'] ?? 'newest'; // Mặc định là sản phẩm mới nhất
-        switch ($sort) {
-            case 'price_low':
-                $query .= " ORDER BY min_price ASC";
-                break;
-            case 'price_high':
-                $query .= " ORDER BY min_price DESC";
-                break;
-            case 'name':
-                $query .= " ORDER BY p.name ASC";
-                break;
-            case 'bestseller':
-                // Tạm thời sử dụng pro_id, sau này sẽ thay bằng số lượng bán
-                $query .= " ORDER BY p.pro_id DESC";
-                break;
-            case 'newest':
-            default:
-                $query .= " ORDER BY p.pro_id DESC"; // Sản phẩm mới nhất theo ID
-                break;
-        }
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute($params);
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("ProductModel getFilteredProducts Error: " . $e->getMessage());
-        return [];
     }
-}
 
     // THÊM METHOD ĐỂ LẤY TAGS CHO PRODUCT
     public function getProductTags($productId) {
