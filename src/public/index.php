@@ -32,6 +32,12 @@ switch ($action) {
         require_once __DIR__ . '/../app/views/policy.php';
         break;
 
+    case 'search':
+        require_once __DIR__ . '/../app/controllers/searchController.php';
+        $controller = new SearchController($conn);
+        $controller->index();
+        break;
+
     case 'detail':
         require_once __DIR__ . '/../app/controllers/productController.php';
         $controller = new productController($conn);
@@ -113,11 +119,37 @@ switch ($action) {
     case 'account':
         // Chỉ cho phép user đã login
         if (!isset($_SESSION['customer'])) {
-            header("Location: {$base_url}/public/index.php?action=login");
+            header("Location: index.php?action=login");
             exit;
         }
 
-        include __DIR__ . '/../app/views/account.php';
+        $accountAction = $_GET['sub_action'] ?? 'view';
+        switch ($accountAction) {
+            case 'update':
+                require_once __DIR__ . '/../app/controllers/updateCustomerController.php';
+                $controller = new updateCustomerController($conn);
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->update();
+                } else {
+                    include __DIR__ . '/../app/views/account.php';
+                }
+                break;
+
+            case 'change_password':
+                require_once __DIR__ . '/../app/controllers/changePasswordController.php';
+                $controller = new changePasswordController($conn);
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->changePassword();
+                } else {
+                    include __DIR__ . '/../app/views/account.php';
+                }
+                break;
+
+            case 'view':
+            default:
+                include __DIR__ . '/../app/views/account.php';
+                break;
+        }
         break;
 
     case 'forgot_password':
