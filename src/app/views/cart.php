@@ -277,8 +277,6 @@ function updateQuantityInDatabase(itemId, newQuantity) {
 }
 
 function removeItem(itemId) {
-    if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) return;
-
     const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
     if (itemElement) {
         itemElement.style.opacity = '0.5';
