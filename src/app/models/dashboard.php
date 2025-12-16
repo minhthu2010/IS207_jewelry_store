@@ -10,7 +10,7 @@ class Dashboard {
     public function getRevenue($month = null, $year = null) {
         $sql = "SELECT COALESCE(SUM(total), 0) as total_revenue 
                 FROM orders 
-                WHERE payment_status = 'success'";
+                WHERE status = 1";
         
         $params = [];
         
@@ -40,7 +40,7 @@ class Dashboard {
                     DAY(order_date) as day,
                     COALESCE(SUM(total), 0) as revenue
                 FROM orders 
-                WHERE payment_status = 'success' 
+                WHERE status = 1
                 AND MONTH(order_date) = ?
                 AND YEAR(order_date) = ?
                 GROUP BY DAY(order_date)
@@ -71,7 +71,7 @@ class Dashboard {
                     YEAR(order_date) as year,
                     COALESCE(SUM(total), 0) as revenue
                 FROM orders 
-                WHERE payment_status = 'success' 
+                WHERE status = 1
                 GROUP BY YEAR(order_date)
                 ORDER BY year";
         
@@ -92,7 +92,7 @@ class Dashboard {
                     YEAR(order_date) as year,
                     COALESCE(SUM(total), 0) as revenue
                 FROM orders 
-                WHERE payment_status = 'success' 
+                WHERE status = 1
                 AND MONTH(order_date) = ?
                 GROUP BY YEAR(order_date)
                 ORDER BY year(order_date)";
@@ -108,9 +108,10 @@ class Dashboard {
         
         return $revenueData;
     }
+    
     // Tổng số đơn hàng
     public function getTotalOrders($month = null, $year = null) {
-        $sql = "SELECT COUNT(*) as total_orders FROM orders WHERE 1=1";
+        $sql = "SELECT COUNT(*) as total_orders FROM orders WHERE status = 1";
         $params = [];
         
         if ($month && $year) {
@@ -132,7 +133,8 @@ class Dashboard {
     public function getTotalOrdersByMonthAllYears($month) {
         $sql = "SELECT COUNT(*) as total_orders 
                 FROM orders 
-                WHERE MONTH(order_date) = ? AND payment_status = 'success'";
+                WHERE MONTH(order_date) = ? 
+                AND status = 1";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$month]);
@@ -169,7 +171,7 @@ class Dashboard {
                     MONTH(order_date) as month,
                     COALESCE(SUM(total), 0) as revenue
                 FROM orders 
-                WHERE payment_status = 'success' 
+                WHERE status = 1
                 AND YEAR(order_date) = ?
                 GROUP BY MONTH(order_date)
                 ORDER BY month";
@@ -191,12 +193,12 @@ class Dashboard {
         return $revenueData;
     }
     
-    // Phương thức lấy đơn hàng theo loại lọc
-    public function getRecentOrdersByFilter($limit = 10, $filterType = '', $filterMonth = '', $filterYear = '') {
+    // Phương thức lấy đơn hàng theo loại lọc (KHÔNG giới hạn số lượng)
+    public function getRecentOrdersByFilter($filterType = '', $filterMonth = '', $filterYear = '') {
         $sql = "SELECT o.*, c.fullname as customer_name 
                 FROM orders o 
                 LEFT JOIN customer c ON o.customer_id = c.cus_id 
-                WHERE o.payment_status = 'success'";
+                WHERE o.status = 1";
         
         $params = [];
         
@@ -228,39 +230,7 @@ class Dashboard {
                 break;
         }
         
-        $sql .= " ORDER BY o.order_date DESC LIMIT " . (int)$limit;
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Danh sách đơn hàng mới nhất
-    public function getRecentOrders($limit = 10, $month = null, $year = null) {
-        $sql = "SELECT 
-                    o.order_id,
-                    o.order_date,
-                    o.total,
-                    o.payment_method,
-                    o.payment_status,
-                    o.status,
-                    c.fullname as customer_name
-                FROM orders o
-                LEFT JOIN customer c ON o.customer_id = c.cus_id
-                WHERE 1=1";
-        
-        $params = [];
-        
-        if ($month && $year) {
-            $sql .= " AND MONTH(o.order_date) = ? AND YEAR(o.order_date) = ?";
-            $params[] = $month;
-            $params[] = $year;
-        } elseif ($year) {
-            $sql .= " AND YEAR(o.order_date) = ?";
-            $params[] = $year;
-        }
-        
-        $sql .= " ORDER BY o.order_date DESC LIMIT " . (int)$limit;
+        $sql .= " ORDER BY o.order_date DESC";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -271,6 +241,7 @@ class Dashboard {
     public function getOrderYears() {
         $sql = "SELECT DISTINCT YEAR(order_date) as year 
                 FROM orders 
+                WHERE status = 1
                 ORDER BY year DESC";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
