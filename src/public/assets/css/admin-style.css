@@ -95,25 +95,103 @@ body {
     background-color: rgba(255,255,255,0.1);
 }
 
+/* Thêm các style sau vào file CSS của bạn */
+
+/* Collapse Styles - Đồng bộ với sidebar */
+.nav-link[data-bs-toggle="collapse"] {
+    color: rgba(255,255,255,0.8) !important;
+    background: transparent !important;
+    border-radius: 0;
+    margin: 0;
+}
+
+.nav-link[data-bs-toggle="collapse"]:hover {
+    color: white !important;
+    background-color: rgba(255,255,255,0.1) !important;
+    transform: none;
+    box-shadow: none;
+}
+
+.nav-link[data-bs-toggle="collapse"]:not(.collapsed) {
+    color: white !important;
+    background-color: rgba(255,255,255,0.1) !important;
+}
+
+.nav-link[data-bs-toggle="collapse"] i.fa-angle-down {
+    transition: transform 0.3s ease;
+}
+
+.nav-link[data-bs-toggle="collapse"]:not(.collapsed) i.fa-angle-down {
+    transform: rotate(180deg);
+}
+
+/* Collapse inner - Màu nền phù hợp với primary-color */
 .collapse-inner {
-    background-color: white;
-    border-radius: 0.35rem;
-    padding: 0.5rem 0;
+    background-color: var(--primary-color) !important;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
 }
 
 .collapse-item {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem 0.75rem 2.5rem !important;
     display: block;
-    color: #3a3b45;
+    color: rgba(255,255,255,0.8) !important;
     text-decoration: none;
     font-size: 0.9rem;
     transition: all 0.3s;
+    border: none;
+    background: transparent !important;
+    position: relative;
 }
 
 .collapse-item:hover {
-    background-color: #eaecf4;
-    color: #3a3b45;
+    background-color: rgba(255,255,255,0.1) !important;
+    color: white !important;
+    transform: none;
 }
+
+.collapse-item i {
+    margin-right: 0.5rem;
+    width: 16px;
+    text-align: center;
+    font-size: 0.8rem;
+}
+
+/* Thêm indicator nhỏ cho collapse item */
+.collapse-item:before {
+    content: "";
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+}
+
+/* Active state cho collapse item */
+.collapse-item.active {
+    color: white !important;
+    background-color: rgba(255,255,255,0.15) !important;
+}
+
+.collapse-item.active:before {
+    background-color: white;
+}
+
+/* Responsive cho collapse */
+@media (max-width: 768px) {
+    .collapse-item {
+        padding: 0.75rem 1rem 0.75rem 2rem !important;
+    }
+    
+    .collapse-item:before {
+        left: 1rem;
+    }
+}
+
 
 .collapse-header {
     padding: 0.5rem 1rem;
