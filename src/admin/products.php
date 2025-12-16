@@ -15,7 +15,7 @@ if (!isset($_SESSION['admin'])) {
 $action = $_GET['action'] ?? 'index';
 $id = $_GET['id'] ?? null;
 
-$strict_post_actions = ['store', 'add_variant', 'update_variant', 'delete_variant', 'add_image', 'set_main_image', 'delete_image', 'update_image_sort_orders'];
+$strict_post_actions = ['store', 'add_variant', 'update_variant', 'add_image', 'set_main_image', 'delete_image', 'update_image_sort_orders'];
 
 if (in_array($action, $strict_post_actions) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['error'] = "Invalid request method for action: " . $action;
@@ -39,17 +39,11 @@ try {
         case 'update':
             $controller->update($id);
             break;
-        case 'delete':
-            $controller->delete($id);
-            break;
         case 'add_variant':
             $controller->addVariant();
             break;
         case 'update_variant':
             $controller->updateVariant($id);
-            break;
-        case 'delete_variant':
-            $controller->deleteVariant($id);
             break;
         case 'add_image':
             $controller->addImage();
