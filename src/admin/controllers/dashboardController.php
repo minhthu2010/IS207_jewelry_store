@@ -36,7 +36,7 @@ class DashboardController {
                 $chartLabels = array_map(function($year) {
                     return "Năm $year";
                 }, array_keys($revenueChart));
-                $recentOrdersTitle = "Đơn hàng gần đây - Tháng $filterMonth (Tất cả năm)";
+                $recentOrdersTitle = "Tất cả đơn hàng trong tháng $filterMonth (Tất cả năm)";
                 $statisticsTitle = "Tháng $filterMonth (Tất cả năm)";
                 break;
                 
@@ -49,7 +49,7 @@ class DashboardController {
                 $chartTitle = "Doanh thu năm $filterYear";
                 $chartLabels = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 
                             'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-                $recentOrdersTitle = "Đơn hàng gần đây - Năm $filterYear";
+                $recentOrdersTitle = "Tất cả đơn hàng trong năm $filterYear";
                 $statisticsTitle = "Năm $filterYear";
                 break;
                 
@@ -63,7 +63,7 @@ class DashboardController {
                 $chartLabels = array_map(function($day) {
                     return "Ngày $day";
                 }, array_keys($revenueChart));
-                $recentOrdersTitle = "Đơn hàng gần đây - Tháng $filterMonth/$filterYear";
+                $recentOrdersTitle = "Tất cả đơn hàng trong tháng $filterMonth/$filterYear";
                 $statisticsTitle = "Tháng $filterMonth/$filterYear";
                 break;
                 
@@ -79,13 +79,13 @@ class DashboardController {
                 $chartLabels = array_map(function($day) {
                     return "Ngày $day";
                 }, array_keys($revenueChart));
-                $recentOrdersTitle = "Đơn hàng gần đây - Tháng $currentMonth/$currentYear";
+                $recentOrdersTitle = "Tất cả đơn hàng trong tháng $currentMonth/$currentYear";
                 $statisticsTitle = "Tháng $currentMonth/$currentYear";
                 break;
         }
         
-        // Lấy đơn hàng gần đây theo bộ lọc
-        $recentOrders = $this->dashboardModel->getRecentOrdersByFilter(10, $filterType, $filterMonth, $filterYear);
+        // Lấy các đơn hàng theo bộ lọc
+        $recentOrders = $this->dashboardModel->getRecentOrdersByFilter($filterType, $filterMonth, $filterYear);
         
         // Lấy dữ liệu thống kê
         $data = [
