@@ -23,12 +23,10 @@ class OrderController {
     }
     
     public function index() {
-        // Kiểm tra đăng nhập admin
-        // if (!isset($_SESSION['admin_logged_in'])) {
-        //     // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập admin
-        //     header("Location: index.php");
-        //     exit();
-        // }
+        if (!isset($_SESSION['admin'])) {
+            echo json_encode(['success' => false, 'message' => 'Bạn chưa đăng nhập']);
+            exit;
+        }
         
         // Lấy các tham số lọc
         $filters = [
@@ -59,42 +57,52 @@ class OrderController {
     public function updateStatus() {
         // Kiểm tra đăng nhập admin
         // if (!isset($_SESSION['admin_logged_in'])) {
-        //     header("Location: index.php");
+        //     header("Location: login.php");
         //     exit();
         // }
         
         if (isset($_POST['action'])) {
-            if ($_POST['action'] == 'update_order_status') {
-                $order_id = $_POST['order_id'];
-                $status = $_POST['status'];
-                
-                if ($this->orderModel->updateOrderStatus($order_id, $status)) {
-                    $_SESSION['success'] = "Cập nhật trạng thái đơn hàng thành công!";
-                } else {
-                    $_SESSION['error'] = "Có lỗi xảy ra khi cập nhật trạng thái đơn hàng!";
-                }
-                
-            } elseif ($_POST['action'] == 'update_payment_status') {
+            if ($_POST['action'] == 'update_payment_status') {
                 $order_id = $_POST['order_id'];
                 $payment_status = $_POST['payment_status'];
                 
-                if ($this->updatePaymentStatus($order_id, $payment_status)) {
+                // Logic: Trạng thái đơn hàng tự động thay đổi theo trạng thái thanh toán
+                $order_status = 0; // Mặc định là CHỜ XÁC NHẬN
+                
+                switch($payment_status) {
+                    case 'success':
+                        $order_status = 1; // ĐÃ XÁC NHẬN
+                        break;
+                    case 'failed':
+                        $order_status = 2; // ĐÃ HỦY
+                        break;
+                    case 'pending':
+                        $order_status = 0; // CHỜ XÁC NHẬN
+                        break;
+                }
+                
+                if ($this->updatePaymentAndOrderStatus($order_id, $payment_status, $order_status)) {
                     $_SESSION['success'] = "Cập nhật trạng thái thanh toán thành công!";
                 } else {
                     $_SESSION['error'] = "Có lỗi xảy ra khi cập nhật trạng thái thanh toán!";
                 }
             }
             
-            header("Location: orders.php");
+            header("Location: " . $_SERVER['HTTP_REFERER'] ?? "orders.php");
             exit();
         }
     }
 
-    private function updatePaymentStatus($order_id, $payment_status) {
-        $sql = "UPDATE orders SET payment_status = ?, updated_at = NOW() WHERE order_id = ?";
+    private function updatePaymentAndOrderStatus($order_id, $payment_status, $order_status) {
+        $sql = "UPDATE orders SET 
+                payment_status = ?, 
+                status = ?, 
+                updated_at = NOW() 
+                WHERE order_id = ?";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([$payment_status, $order_id]);
+        return $stmt->execute([$payment_status, $order_status, $order_id]);
     }
+    
 }
 
 // Xử lý request
