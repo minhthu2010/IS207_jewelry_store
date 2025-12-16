@@ -28,6 +28,7 @@ class ProductController_Admin {
             'search' => $_GET['search'] ?? '',
             'category_id' => $_GET['category_id'] ?? '',
             'has_size' => $_GET['has_size'] ?? '',
+            'status' => $_GET['status'] ?? '', // Thêm filter status
             'stock_status' => $_GET['stock_status'] ?? '',
             'custom_stock' => $_GET['custom_stock'] ?? '',
             'min_price' => $_GET['min_price'] ?? '',
@@ -138,7 +139,8 @@ class ProductController_Admin {
                     'name' => $_POST['name'],
                     'description' => $_POST['description'],
                     'category_id' => $_POST['category_id'],
-                    'warranty_id' => !empty($_POST['warranty_id']) ? $_POST['warranty_id'] : null
+                    'warranty_id' => !empty($_POST['warranty_id']) ? $_POST['warranty_id'] : null,
+                    'status' => isset($_POST['product_status']) ? 1 : 0 // Thêm status từ toggle
                 ]);
 
                 $this->tagModel->deleteTagsByProduct($product_id);
@@ -167,15 +169,6 @@ class ProductController_Admin {
         }
     }
 
-    public function delete($product_id) {
-        // Kiểm tra session
-        $this->checkAdminAuth();
-        
-        $this->productModel->deleteProduct($product_id);
-        $_SESSION['success'] = 'Sản phẩm đã được xóa thành công!';
-        header('Location: products.php');
-        exit;
-    }
 
     public function addVariant() {
         // Kiểm tra session
@@ -204,40 +197,44 @@ class ProductController_Admin {
         }
     }
 
+
+
+    // Sửa phương thức updateVariant
     public function updateVariant($variant_id) {
-        // Kiểm tra session
         $this->checkAdminAuth();
         
         if ($_POST['action'] == 'update_variant') {
-            $product_id = $_POST['product_id'];
-            
-            if ($this->variantModel->variantExists($_POST['sku'], $variant_id)) {
-                $_SESSION['error'] = 'SKU đã tồn tại!';
-                header('Location: products.php?action=edit&id=' . $product_id . '#variants');
-                exit;
+            try {
+                $product_id = $_POST['product_id'];
+                
+                // Kiểm tra SKU trùng
+                if ($this->variantModel->variantExists($_POST['sku'], $variant_id)) {
+                    $_SESSION['error'] = 'SKU đã tồn tại!';
+                    header('Location: products.php?action=edit&id=' . $product_id . '#variants');
+                    exit;
+                }
+
+                // Lấy status từ checkbox (nếu không có checkbox thì mặc định là 1)
+                $status = isset($_POST['variant_status']) ? 1 : 0;
+
+                $result = $this->variantModel->updateVariant($variant_id, [
+                    'sku' => $_POST['sku'],
+                    'size' => $_POST['size'] ?: null,
+                    'price' => $_POST['price'],
+                    'stock_quantity' => $_POST['stock_quantity'],
+                    'status' => $status
+                ]);
+
+                if ($result) {
+                    $_SESSION['success'] = 'Phiên bản sản phẩm đã được cập nhật thành công!';
+                } else {
+                    throw new Exception("Không thể cập nhật phiên bản sản phẩm");
+                }
+
+            } catch (Exception $e) {
+                $_SESSION['error'] = 'Lỗi khi cập nhật phiên bản sản phẩm: ' . $e->getMessage();
             }
-
-            $this->variantModel->updateVariant($variant_id, [
-                'sku' => $_POST['sku'],
-                'size' => $_POST['size'] ?: null,
-                'price' => $_POST['price'],
-                'stock_quantity' => $_POST['stock_quantity']
-            ]);
-
-            $_SESSION['success'] = 'Phiên bản sản phẩm đã được cập nhật thành công!';
-            header('Location: products.php?action=edit&id=' . $product_id . '#variants');
-            exit;
-        }
-    }
-
-    public function deleteVariant($variant_id) {
-        // Kiểm tra session
-        $this->checkAdminAuth();
-        
-        if ($_POST['action'] == 'delete_variant') {
-            $product_id = $_POST['product_id'];
-            $this->variantModel->deleteVariant($variant_id);
-            $_SESSION['success'] = 'Phiên bản sản phẩm đã được xóa thành công!';
+            
             header('Location: products.php?action=edit&id=' . $product_id . '#variants');
             exit;
         }
@@ -339,5 +336,4 @@ class ProductController_Admin {
     }
 }
 
-// Không tự động chạy controller, chỉ khởi tạo khi được gọi từ file chính
 ?>
