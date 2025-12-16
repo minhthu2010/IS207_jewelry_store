@@ -69,39 +69,80 @@
     outline: none;
 }
 
+/* CSS cho phương thức thanh toán cũ */
 .payment-methods {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
+/* Tạo label giả để bao toàn bộ */
 .payment-method {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    position: relative;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px 20px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    background: white;
 }
 
 .payment-method:hover {
-    border-color: #081c58;
+    border-color: #d4af37;
+    background-color: #fffef7;
 }
 
-.payment-method input {
-    margin-right: 10px;
+/* Tạo label giả che toàn bộ khu vực */
+.payment-method::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    cursor: pointer;
+    z-index: 1;
 }
 
-.payment-method label {
+/* Đưa label thật lên trên cùng */
+.payment-method > label {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
-    font-weight: 500;
     margin: 0;
+    padding: 0;
 }
 
+/* Radio button */
+.payment-method input[type="radio"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Text */
+.payment-method label {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Khi được chọn */
+.payment-method.selected {
+    border-color: #d4af37;
+    background-color: #fffef7;
+}
+
+.payment-method.selected label {
+    color: #d4af37;
+    font-weight: 600;
+}
 .order-items {
     width: 100%;
     border-collapse: collapse;
@@ -364,4 +405,4 @@
 
 .notice-info p {
     margin: 0;
-}
+} 
