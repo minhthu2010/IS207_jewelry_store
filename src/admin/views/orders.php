@@ -3,10 +3,9 @@ include __DIR__ . '/templates/header.php';
 include __DIR__ . '/templates/sidebar.php';
 include __DIR__ . '/templates/topbar.php';
 ?>
-
+<link rel="stylesheet" href="../public/assets/css/style_admin_order.css">
 <div class="container-fluid">
     <h1 class="h3 mb-4 text-gray-800">Quản lý đơn hàng</h1>
-
     <!-- Filter Section -->
     <form method="GET" class="row g-3 mb-3">
         <div class="col-md-2">
@@ -75,14 +74,24 @@ include __DIR__ . '/templates/topbar.php';
                         <th>TỔNG TIỀN</th>
                         <th>PTTT</th>
                         <th>TRẠNG THÁI TT</th>
-                        <th>TRẠNG THÁI ĐƠN</th>
+                        <th>TRẠNG THÁI ĐƠN HÀNG</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($orders)) : ?>
-                        <?php foreach ($orders as $order) : ?>
+                        <?php foreach ($orders as $order) : 
+                            // Xác định class màu cho select payment status
+                            $payment_class = '';
+                            switch($order['payment_status']) {
+                                case 'pending': $payment_class = 'payment-pending'; break;
+                                case 'success': $payment_class = 'payment-success'; break;
+                                case 'failed': $payment_class = 'payment-failed'; break;
+                            }
+                        ?>
                             <tr>
-                                <td><strong>#<?= $order['order_id'] ?></strong></td>
+                                <td>
+                                    <?= $order['order_id'] ?>
+                                </td>
                                 <td>
                                     <div class="fw-bold"><?= htmlspecialchars($order['customer_name'] ?? 'N/A') ?></div>
                                     <small class="text-muted"><?= htmlspecialchars($order['customer_email'] ?? '') ?></small>
@@ -93,15 +102,12 @@ include __DIR__ . '/templates/topbar.php';
                                 </td>
                                 <td><?= strtoupper(htmlspecialchars($order['payment_method'] ?? 'N/A')) ?></td>
                                 <td>
-                                    <form method="POST" class="d-inline">
+                                    <form method="POST" class="d-inline update-payment-form" data-order-id="<?= $order['order_id'] ?>">
                                         <input type="hidden" name="action" value="update_payment_status">
                                         <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                        <select name="payment_status" class="form-select form-select-sm" 
-                                                onchange="this.form.submit()"
-                                                style="background-color: <?= 
-                                                    $order['payment_status'] == 'success' ? '#d1edff' : 
-                                                    ($order['payment_status'] == 'pending' ? '#fff3cd' : '#f8d7da') 
-                                                ?>; color: #000; border: 1px solid #dee2e6;">
+                                        <select name="payment_status" class="form-select form-select-sm <?= $payment_class ?> payment-status-select" 
+                                                data-current-status="<?= $order['payment_status'] ?>"
+                                                data-order-id="<?= $order['order_id'] ?>">
                                             <option value="pending" <?= $order['payment_status'] == 'pending' ? 'selected' : '' ?>>CHỜ THANH TOÁN</option>
                                             <option value="success" <?= $order['payment_status'] == 'success' ? 'selected' : '' ?>>THÀNH CÔNG</option>
                                             <option value="failed" <?= $order['payment_status'] == 'failed' ? 'selected' : '' ?>>THẤT BẠI</option>
@@ -109,26 +115,38 @@ include __DIR__ . '/templates/topbar.php';
                                     </form>
                                 </td>
                                 <td>
-                                    <form method="POST" class="d-inline">
-                                        <input type="hidden" name="action" value="update_order_status">
-                                        <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                        <select name="status" class="form-select form-select-sm" 
-                                                onchange="this.form.submit()"
-                                                style="background-color: <?= 
-                                                    $order['status'] == 1 ? '#d1f2eb' : 
-                                                    ($order['status'] == 2 ? '#f8d7da' : '#fff3cd') 
-                                                ?>; color: #000; border: 1px solid #dee2e6;">
-                                            <option value="0" <?= $order['status'] == 0 ? 'selected' : '' ?>>CHỜ XÁC NHẬN</option>
-                                            <option value="1" <?= $order['status'] == 1 ? 'selected' : '' ?>>ĐÃ XÁC NHẬN</option>
-                                            <option value="2" <?= $order['status'] == 2 ? 'selected' : '' ?>>ĐÃ HỦY</option>
-                                        </select>
-                                    </form>
+                                    <?php
+                                    $badge_class = '';
+                                    $status_text = '';
+                                    
+                                    switch($order['status']) {
+                                        case 1:
+                                            $badge_class = 'badge-success-custom';
+                                            $status_text = 'ĐÃ XÁC NHẬN';
+                                            break;
+                                        case 2:
+                                            $badge_class = 'badge-danger-custom';
+                                            $status_text = 'ĐÃ HỦY';
+                                            break;
+                                        default:
+                                            $badge_class = 'badge-warning-custom';
+                                            $status_text = 'CHỜ XÁC NHẬN';
+                                            break;
+                                    }
+                                    ?>
+                                    
+                                    <span class="badge <?= $badge_class ?> p-2" style="font-size: 15px; min-width: 100px;">
+                                        <?= $status_text ?>
+                                    </span>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
                         <tr>
-                            <td colspan="7" class="text-center text-muted">Không có đơn hàng nào</td>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                Không có đơn hàng nào
+                            </td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -136,5 +154,83 @@ include __DIR__ . '/templates/topbar.php';
         </div>
     </div>
 </div>
-
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý thay đổi trạng thái thanh toán với SweetAlert2
+    document.querySelectorAll('.payment-status-select').forEach(select => {
+        select.addEventListener('change', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const orderId = this.dataset.orderId;
+            const currentStatus = this.dataset.currentStatus;
+            const newStatus = this.value;
+            
+            // Lấy tên trạng thái để hiển thị
+            const statusNames = {
+                'pending': 'CHỜ THANH TOÁN',
+                'success': 'THÀNH CÔNG',
+                'failed': 'THẤT BẠI'
+            };
+            
+            const currentStatusName = statusNames[currentStatus];
+            const newStatusName = statusNames[newStatus];
+            
+            // Xác định trạng thái đơn hàng tương ứng
+            let orderStatus = 0;
+            switch(newStatus) {
+                case 'success':
+                    orderStatus = 1; // ĐÃ XÁC NHẬN
+                    break;
+                case 'failed':
+                    orderStatus = 2; // ĐÃ HỦY
+                    break;
+                case 'pending':
+                    orderStatus = 0; // CHỜ XÁC NHẬN
+                    break;
+            }
+            
+            const orderStatusNames = {
+                0: 'CHỜ XÁC NHẬN',
+                1: 'ĐÃ XÁC NHẬN', 
+                2: 'ĐÃ HỦY'
+            };
+            const newOrderStatusName = orderStatusNames[orderStatus];
+            
+            Swal.fire({
+                title: 'Xác nhận thay đổi trạng thái',
+                html: `<div style="text-align: left;">
+                        <p><strong>Đơn hàng:</strong> ${orderId}</p>
+                        <p><strong>Trạng thái thanh toán:<span class="${newStatus === 'success' ? 'text-success' : (newStatus === 'failed' ? 'text-danger' : 'text-warning')}">${newStatusName}</span></p>
+                        <p><strong>Trạng thái đơn hàng:</strong> Tự động chuyển sang <span class="${orderStatus === 1 ? 'text-success' : (orderStatus === 2 ? 'text-danger' : 'text-warning')}">${newOrderStatusName}</span></p>
+                       </div>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Đồng ý thay đổi',
+                cancelButtonText: 'Hủy bỏ',
+                reverseButtons: true,
+                width: 500
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Gửi form
+                    const form = this.closest('form');
+                    form.submit();
+                } else {
+                    // Khôi phục giá trị cũ
+                    this.value = currentStatus;
+                }
+            });
+        });
+    });
+    
+    // Tắt mặc định confirm của browser
+    document.querySelectorAll('.update-payment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    });
+});
+</script>
 <?php include __DIR__ . '/templates/footer.php'; ?>
