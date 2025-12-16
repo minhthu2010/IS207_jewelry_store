@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>D. Patel Jewelry</title>
+  <title>Lara Jewelry</title>
   
   <!-- Bootstrap offline -->
   <link rel="stylesheet" href="../public/assets/css/bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css">
@@ -18,11 +18,11 @@
 
 <body>
   <header class="navbar">
-  <div class="logo">D. Patel</div>
+  <div class="logo">Lara Jewelry</div>
   <nav class="menu">
-    <a href="index.php?action=list">Shop All</a>
-    <a href="#">About</a>
-    <a href="#">Contact</a>
+    <a href="index.php?action=list">Sản phẩm</a>
+    <a href="index.php?action=brand">Thương hiệu</a>
+    <a href="index.php?action=policy">Chính sách</a>
   </nav>
   <div class="actions">
     <i class="fas fa-search"></i>
