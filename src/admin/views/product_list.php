@@ -9,7 +9,22 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
 
 <div class="container-fluid">
     <h1 class="h3 mb-4 text-gray-800">Quản lý sản phẩm</h1>
+        <!-- Hiển thị thông báo -->
+    <?php if (isset($_SESSION['success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= $_SESSION['success'] ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
 
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= $_SESSION['error'] ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
     <!-- Filter Section -->
     <form method="GET" class="row g-3 mb-3">
         <div class="col-md-3">
@@ -39,7 +54,16 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
             </select>
         </div>
         
-        <!-- BỘ LỌC STOCK MỚI -->
+        <!-- Thêm bộ lọc trạng thái -->
+        <div class="col-md-2">
+            <label class="form-label">Trạng thái</label>
+            <select name="status" class="form-control">
+                <option value="">Tất cả</option>
+                <option value="1" <?= ($_GET['status'] ?? '') == '1' ? 'selected' : '' ?>>Đang bán</option>
+                <option value="0" <?= ($_GET['status'] ?? '') == '0' ? 'selected' : '' ?>>Ngừng bán</option>
+            </select>
+        </div>
+        
         <div class="col-md-2">
             <label class="form-label">Tình trạng stock</label>
             <select name="stock_status" class="form-control">
@@ -122,6 +146,7 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
                         <th>Tổng stock</th>
                         <th>Giá thấp nhất</th>
                         <th>Giá cao nhất</th>
+                        <th>Trạng thái</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
@@ -160,25 +185,22 @@ $base_url = "http://" . $_SERVER['HTTP_HOST'] . "/jewelry_website/";
                                     <?= number_format($product['max_price'] ?? 0, 0, ',', '.') ?>₫
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="products.php?action=edit&id=<?= $product['pro_id'] ?>" 
-                                        class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i> Sửa
-                                        </a>
-                                        
-                                        <form method="POST" action="products.php?action=delete&id=<?= $product['pro_id'] ?>" 
-                                            class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i> Xóa
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <span class="badge <?= $product['status'] == 1 ? 'bg-success' : 'bg-secondary' ?>">
+                                        <?= $product['status'] == 1 ? 'Đang bán' : 'Ngừng bán' ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <!-- CHỈ GIỮ LẠI NÚT SỬA, BỎ NÚT TOGGLE STATUS -->
+                                    <a href="products.php?action=edit&id=<?= $product['pro_id'] ?>" 
+                                    class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
                         <tr>
-                            <td colspan="8" class="text-center text-muted">Không có sản phẩm nào</td>
+                            <td colspan="9" class="text-center text-muted">Không có sản phẩm nào</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
