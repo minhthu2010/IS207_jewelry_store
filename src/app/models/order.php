@@ -184,6 +184,5 @@ class Order {
 
         return ['order' => $order, 'items' => $items];
     }
-
 }
 ?>
