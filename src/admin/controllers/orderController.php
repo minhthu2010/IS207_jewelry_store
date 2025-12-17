@@ -52,11 +52,24 @@ class OrderController {
     }
     
     public function handleRequest() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $this->handlePost();
-        } else {
-            $this->index();
+    // Kiểm tra nếu là AJAX request cho COD
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+            $action = $_POST['action'];
+            
+            if ($action === 'confirm_cod_payment') {
+                $this->confirmCodPayment();
+                return; // Dừng xử lý, không redirect
+            }
+            
+            // Các action khác
+            if ($action === 'update_order_status') {
+                $this->updateOrderStatus();
+                return;
+            }
         }
+        
+        // Nếu không phải AJAX, hiển thị trang bình thường
+        $this->index();
     }
     
     private function handlePost() {
