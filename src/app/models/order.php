@@ -37,11 +37,7 @@ class Order {
             $params[] = $filters['payment_method'];
         }
         
-        // Lọc theo trạng thái thanh toán
-        if (!empty($filters['payment_status'])) {
-            $sql .= " AND o.payment_status = ?";
-            $params[] = $filters['payment_status'];
-        }
+        // Lọc theo tổng tiền (từ)
         if (!empty($filters['min_total'])) {
             $sql .= " AND o.total >= ?";
             $params[] = $filters['min_total'];
@@ -52,6 +48,7 @@ class Order {
             $sql .= " AND o.total <= ?";
             $params[] = $filters['max_total'];
         }
+        
         $sql .= " ORDER BY o.order_date DESC";
         
         $stmt = $this->db->prepare($sql);
@@ -59,10 +56,38 @@ class Order {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    // Lấy thông tin chi tiết 1 đơn hàng
+    public function getOrderById($order_id) {
+        $sql = "SELECT * FROM orders WHERE order_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$order_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    // Cập nhật chỉ trạng thái đơn hàng
     public function updateOrderStatus($order_id, $status) {
         $sql = "UPDATE orders SET status = ?, updated_at = NOW() WHERE order_id = ?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$status, $order_id]);
+    }
+    
+    // Cập nhật chỉ trạng thái thanh toán
+    public function updatePaymentStatus($order_id, $payment_status) {
+        $sql = "UPDATE orders SET payment_status = ?, updated_at = NOW() WHERE order_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$payment_status, $order_id]);
+    }
+    
+    public function updateOnlyOrderStatus($order_id, $status) {
+        $sql = "UPDATE orders SET status = ?, updated_at = NOW() WHERE order_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, $order_id]);
+    }
+    // Cập nhật cả trạng thái đơn hàng và thanh toán
+    public function updateOrderAndPaymentStatus($order_id, $order_status, $payment_status) {
+        $sql = "UPDATE orders SET status = ?, payment_status = ?, updated_at = NOW() WHERE order_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$order_status, $payment_status, $order_id]);
     }
     
     public function getYears() {
@@ -88,8 +113,9 @@ class Order {
     public function getPaymentStatusLabels() {
         return [
             'pending' => 'CHỜ THANH TOÁN',
-            'success' => 'THÀNH CÔNG', 
-            'failed' => 'THẤT BẠI'
+            'success' => 'ĐÃ THANH TOÁN', 
+            'failed' => 'THẤT BẠI',
+            'refund_required' => 'CẦN HOÀN TIỀN'
         ];
     }
 
