@@ -184,5 +184,50 @@ class Order {
 
         return ['order' => $order, 'items' => $items];
     }
+
+    public function cancelOrderByCustomer($orderId, $customerId) {
+    // 1. Kiểm tra đơn hàng tồn tại + thuộc về khách + trạng thái cho phép hủy
+        $stmt = $this->db->prepare("
+            SELECT status 
+            FROM orders 
+            WHERE order_id = :order_id 
+            AND customer_id = :customer_id
+        ");
+        $stmt->execute([
+            ':order_id' => $orderId,
+            ':customer_id' => $customerId
+        ]);
+
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$order) {
+            return [
+                'success' => false,
+                'message' => 'Đơn hàng không tồn tại'
+            ];
+        }
+
+        if ((int)$order['status'] !== 0) {
+            return [
+                'success' => false,
+                'message' => 'Đơn hàng không thể hủy'
+            ];
+        }
+
+        // 2. Cập nhật trạng thái = 2 (ĐÃ HỦY)
+        $update = $this->db->prepare("
+            UPDATE orders 
+            SET status = 2, updated_at = NOW() 
+            WHERE order_id = :order_id
+        ");
+
+        $update->execute([':order_id' => $orderId]);
+
+        return [
+            'success' => true
+        ];
+    }
 }
 ?>
+
+
