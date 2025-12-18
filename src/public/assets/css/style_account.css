@@ -1,502 +1,780 @@
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: #081c58;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 14px;
+/* ===== ACCOUNT PAGE STYLES - Đồng bộ với checkout.php ===== */
+/* Tất cả class đều có prefix .account- để tránh xung đột */
+
+/* Reset và base styles */
+.account-page-main {
+    background-color: #fefefe;
+    min-height: calc(100vh - 200px);
+    padding-bottom: 60px;
 }
 
-.account-header {
-    background-color: #fdf8e1ff;
-    padding: 20px 0;
-    margin-bottom: 30px;
+.account-page-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header với tabs */
+.account-page-header {
+    background-color: #fff;
     border-bottom: 1px solid #e0e0e0;
+    padding: 0;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.account-container {
-    max-width: 1200px;
+.account-page-header-content {
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
+.account-tabs-container {
+    padding: 0;
+}
+
 .account-tabs {
     display: flex;
-    gap: 30px;
+    gap: 40px;
+    border-bottom: 2px solid transparent;
+    padding: 0;
 }
 
 .account-tab {
-    padding: 10px 0;
+    background: none;
+    border: none;
+    padding: 20px 0;
+    font-family: 'Montserrat', sans-serif;
     font-weight: 500;
+    font-size: 16px;
+    color: #666;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    position: relative;
+    white-space: nowrap;
+    outline: none;
+}
+
+.account-tab:hover {
+    color: #c19a6b;
+}
+
+.account-tab:hover::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #c19a6b;
+    opacity: 0.5;
 }
 
 .account-tab.active {
-    color: #081c58;
-    border-bottom: 2px solid #081c58;
+    color: #c19a6b;
+    font-weight: 600;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px 40px;
+.account-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #c19a6b;
 }
 
-.content {
-    background-color: white;
+/* Main content */
+.account-page-content-wrapper {
+    padding: 0 20px;
+}
+
+.account-page-content {
+    background: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+/* Success message */
+.account-success-message {
+    display: none;
+    background-color: #d4edda;
+    color: #155724;
+    padding: 16px 30px;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid #c3e6cb;
+}
+
+/* Tab content */
+.account-tab-content {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.account-tab-content.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Section styles */
+.account-section {
     padding: 30px;
 }
 
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-.section {
-    margin-bottom: 40px;
-}
-
-.section h2 {
-    margin-bottom: 20px;
-    color: #081c58;
-    font-size: 22px;
-    padding-bottom: 10px;
+.account-section-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
     border-bottom: 1px solid #e0e0e0;
 }
 
-.form-group {
+.account-section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px 0;
+}
+
+.account-section-subtitle {
+    font-family: 'Montserrat', sans-serif;
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Form styles */
+.account-form {
+    margin-top: 20px;
+}
+
+.account-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
     margin-bottom: 20px;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
+.account-form-single {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.form-group input {
+.account-form-group {
+    margin-bottom: 0;
+}
+
+.account-form-label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    color: #333;
+    margin-top: 8px;
+    font-size: 15px;
+}
+
+.account-form-input {
     width: 100%;
     padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 16px;
-    transition: border-color 0.3s;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: #333;
+    transition: all 0.2s ease;
+    background: #fff;
 }
 
-.form-group input:focus {
-    border-color: #081c58;
+.account-form-input:focus {
     outline: none;
+    border-color: #c19a6b;
+    box-shadow: 0 0 0 2px rgba(193, 154, 107, 0.1);
 }
 
-.form-row {
+.account-form-input.readonly {
+    background-color: #f9f9f9;
+    border-color: #e0e0e0;
+    color: #666;
+    cursor: not-allowed;
+}
+
+/* Form actions */
+.account-form-actions {
     display: flex;
-    gap: 20px;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid #e0e0e0;
 }
 
-.form-row .form-group {
-    flex: 1;
-}
-
-.btn {
+/* Button styles */
+.account-btn {
     padding: 12px 25px;
+    border-radius: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.account-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.account-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.account-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.account-btn-edit,
+.account-btn-save {
     background-color: #081c58;
     color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    transition: background-color 0.3s;
+    border: 1px solid #081c58;
 }
 
-.btn:hover {
+.account-btn-edit:hover:not(:disabled),
+.account-btn-save:hover:not(:disabled) {
     background-color: #0a2470;
+    border-color: #0a2470;
+    box-shadow: 0 2px 8px rgba(8, 28, 88, 0.2);
 }
 
-.btn-secondary {
+.account-btn-cancel {
     background-color: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
 }
 
-.btn-secondary:hover {
+.account-btn-cancel:hover:not(:disabled) {
     background-color: #5a6268;
+    border-color: #5a6268;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2);
 }
 
-.btn-change-password {
+.account-btn-change-password {
     background-color: transparent;
     color: #081c58;
     border: 1px solid #081c58;
 }
 
-.btn-change-password:hover {
+.account-btn-change-password:hover:not(:disabled) {
     background-color: #f0f4ff;
+    box-shadow: 0 2px 8px rgba(8, 28, 88, 0.1);
 }
 
-.btn-detail {
+.account-btn-primary {
+    background-color: #081c58;
+    color: white;
+    border: 1px solid #081c58;
+}
+
+.account-btn-primary:hover:not(:disabled) {
+    background-color: #0a2470;
+    border-color: #0a2470;
+    box-shadow: 0 2px 8px rgba(8, 28, 88, 0.2);
+}
+
+.account-btn-detail {
+    padding: 6px 15px;
     background-color: transparent;
     color: #081c58;
     border: 1px solid #081c58;
-    padding: 6px 12px;
-    font-size: 14px;
+    font-size: 13px;
 }
 
-.btn-detail:hover {
+.account-btn-detail:hover:not(:disabled) {
     background-color: #f0f4ff;
 }
 
-.btn-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
+/* Message styles */
+.account-message {
+    display: none;
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
 }
 
-.info-text {
-    margin-top: 5px;
+.account-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.account-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Orders table */
+.account-orders-container {
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.account-orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
+}
+
+.account-orders-table th {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    color: #333;
+    text-align: left;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.account-orders-table td {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+    font-family: 'Montserrat', sans-serif;
     font-size: 14px;
+    color: #333;
+}
+
+.account-orders-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.account-orders-table tr:last-child td {
+    border-bottom: none;
+}
+
+.account-payment-status {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.account-payment-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.account-payment-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.account-payment-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Modal chi tiết đơn hàng - giữ chữ đen đơn giản */
+.account-order-details .account-info-group span {
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
+    font-size: 14px;
+    display: block;
+    line-height: 1.5;
+    /* Không có background-color hay border */
+}
+
+/* Table column specific styles */
+.order-id {
+    font-weight: 500;
+    color: #081c58;
+}
+
+.order-date {
     color: #666;
 }
 
-.orders-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.orders-table th,
-.orders-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.orders-table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
+.order-total {
+    font-weight: 500;
+    color: #333;
 }
 
 .order-status {
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
+    color: #333;
 }
 
-.status-completed {
-    background-color: #d4edda;
-    color: #155724;
+.order-payment {
+    color: #333;
 }
 
-.status-pending {
-    background-color: #fff3cd;
-    color: #856404;
+/* Empty and loading states */
+.account-loading,
+.account-empty,
+.account-error {
+    text-align: center;
+    padding: 40px 20px !important;
 }
 
-.status-processing {
-    background-color: #cce7ff;
-    color: #004085;
+.account-loading-content,
+.account-empty-content,
+.account-error-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #666;
 }
 
-.status-failed {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.payment-status {
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.payment-pending {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.payment-success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.payment-failed {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-
-
-.modal {
+/* Modal styles */
+.account-modal {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
+    z-index: 10001;
+    overflow-y: auto;
+    padding: 40px 20px;
 }
 
-.modal-content {
-    background-color: white;
-    padding: 30px;
+.account-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.account-modal-content {
+    position: relative;
+    background: white;
+    margin: 0 auto;
+    padding: 0;
     border-radius: 8px;
     width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.account-modal-large {
     max-width: 800px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.modal h3 {
-    margin-bottom: 20px;
-    color: #081c58;
-}
-
-.modal-buttons {
+.account-modal-header {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    justify-content: flex-end;
-}
-
-.order-details {
-    margin-top: 20px;
-}
-
-.order-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.info-group {
-    margin-bottom: 15px;
-}
-
-.info-group label {
-    font-weight: 600;
-    color: #555;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.info-group span {
-    color: #333;
-}
-
-.order-items {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 15px 0;
-}
-
-.order-items th,
-.order-items td {
-    padding: 10px 15px;
-    text-align: left;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
     border-bottom: 1px solid #e0e0e0;
 }
 
-.order-items th {
-    background-color: #f8f9fa;
+.account-modal-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
     font-weight: 600;
+    color: #333;
+    margin: 0;
 }
 
-.warranty-info {
-    font-size: 12px;
+.account-modal-close {
+    background: none;
+    border: none;
     color: #666;
-    margin-top: 5px;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
 }
 
-.order-summary {
-    margin-top: 20px;
+.account-modal-close:hover {
+    color: #333;
+}
+
+/* Modal form */
+.account-modal-content .account-form {
+    padding: 20px;
+    margin: 0;
+}
+
+.account-modal-actions {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+    justify-content: flex-end;
+}
+
+/* Order details */
+.account-order-details {
+    padding: 20px;
+}
+
+.account-order-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.account-info-group {
+    margin-bottom: 15px;
+}
+
+.account-info-group:last-child {
+    margin-bottom: 0;
+}
+
+.account-info-group label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 550;
+    color: #333;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.account-info-group span {
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
+    font-size: 14px;
+    display: block;
+    line-height: 1.5;
+}
+
+/* Order items */
+.account-order-items-container {
+    margin: 30px 0;
+}
+
+.account-order-items-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.account-order-items {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e0e0e0;
+}
+
+.account-order-items th {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    color: #333;
+    text-align: left;
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 14px;
+}
+
+.account-order-items td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    color: #333;
+}
+
+.account-order-items tr:hover {
+    background-color: #f9f9f9;
+}
+
+.account-product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.account-product-name {
+    font-weight: 500;
+    font-family: 'Merriweather', sans-serif;
+    color: #333;
+}
+
+/* Order summary */
+.account-order-summary {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.account-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-family: 'Montserrat', sans-serif;
+    color: #666;
+    font-size: 14px;
+}
+
+.account-summary-total {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin-top: 15px;
     padding-top: 15px;
     border-top: 1px solid #e0e0e0;
 }
 
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.summary-total {
-    font-weight: bold;
-    font-size: 18px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #e0e0e0;
-}
-
-.customer-notes {
+/* Customer notes */
+.account-customer-notes {
     background-color: #f8f9fa;
-    padding: 15px;
     border-radius: 4px;
-    margin-top: 15px;
+    padding: 15px;
+    margin-top: 25px;
+    border: 1px solid #e0e0e0;
 }
 
-.customer-notes h4 {
-    margin-bottom: 8px;
-    color: #081c58;
+.account-notes-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 10px 0;
 }
 
-@media (max-width: 768px) {
-    .header-container {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .nav-menu {
-        gap: 15px;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    .footer-content {
-        flex-direction: column;
-        gap: 30px;
-    }
-    
-    .account-tabs {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .orders-table {
-        display: block;
-        overflow-x: auto;
-    }
-    
-    .order-info-grid {
-        grid-template-columns: 1fr;
-    }
+.account-customer-notes p {
+    font-family: 'Montserrat', sans-serif;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Loading overlay */
+.account-loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10002;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+
+.account-loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.account-loading-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: account-spin 1s linear infinite;
+}
+
+@keyframes account-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.account-loading-overlay p {
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0;
 }
 
 
-
-/* Đảm bảo input readonly và disabled không thể nhập */
-.form-group input[readonly],
-.form-group input[disabled] {
-    background-color: #f9f9f9 !important;
-    cursor: not-allowed !important;
-    border-color: #e0e0e0 !important;
-    color: #666 !important;
-    pointer-events: none !important;
-    opacity: 0.8 !important;
-}
-
-.form-group input:not([readonly]):not([disabled]) {
-    background-color: white !important;
-    cursor: text !important;
-    pointer-events: auto !important;
-    opacity: 1 !important;
-}
-
-/* QUAN TRỌNG: Control button visibility with CSS classes */
-
-/* Trạng thái ban đầu - CHỈ HIỆN 2 NÚT ĐẦU */
-#editInfoBtn, 
+/* Đảm bảo hiển thị đúng các nút */
+#editInfoBtn,
 #changePasswordBtn {
     display: inline-block !important;
 }
 
-#saveInfoBtn, 
+#saveInfoBtn,
 #cancelEditBtn {
     display: none !important;
 }
 
-/* Khi đang ở chế độ chỉnh sửa - HIỆN 2 NÚT SAU */
-body.editing-mode #editInfoBtn,
-body.editing-mode #changePasswordBtn {
+/* Khi ở chế độ editing */
+body.account-editing-mode #editInfoBtn,
+body.account-editing-mode #changePasswordBtn {
     display: none !important;
 }
 
-body.editing-mode #saveInfoBtn,
-body.editing-mode #cancelEditBtn {
+body.account-editing-mode #saveInfoBtn,
+body.account-editing-mode #cancelEditBtn {
     display: inline-block !important;
 }
 
-/* Đảm bảo input readonly không thể nhập */
-.form-group input[readonly] {
-    background-color: #f9f9f9 !important;
-    cursor: not-allowed !important;
-    border-color: #e0e0e0 !important;
-    color: #666 !important;
-    pointer-events: none !important;
-}
-
-.form-group input:not([readonly]) {
-    background-color: white !important;
-    cursor: text !important;
-    pointer-events: auto !important;
-    border-color: #081c58 !important;
-}
-
-/* Ẩn success message ban đầu */
-.success-message {
-    display: none;
-    background-color: #d4edda;
-    color: #155724;
-    padding: 12px 15px;
+/* ===== Nút HỦY ĐƠN (giống kích thước nút Xem) ===== */
+.account-btn-cancel-order {
+    padding: 6px 15px;              /* GIỐNG account-btn-detail */
+    background-color: transparent;
+    color: #dc3545;                 /* đỏ */
+    border: 1px solid #dc3545;
+    font-size: 13px;                /* GIỐNG */
+    font-family: 'Montserrat', sans-serif;
     border-radius: 4px;
-    margin-bottom: 20px;
-    border: 1px solid #c3e6cb;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 6px;               /* cách nút Xem */
 }
 
-/* Đảm bảo các nút trong btn-group hiển thị đúng */
-.btn-group .btn {
-    display: inline-block;
+.account-btn-cancel-order:hover:not(:disabled) {
+    background-color: #dc3545;
+    color: #fff;
 }
 
-
-.message {
-    padding: 10px 15px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    font-weight: bold;
-}
-
-.message.error {
-    color: #b71c1c;          /* đỏ chữ */
-    background-color: #ffcdd2; /* nền đỏ nhạt */
-}
-
-.message.success {
-    color: #1b5e20;          /* xanh chữ */
-    background-color: #c8e6c9; /* nền xanh nhạt */
-}
-
-
-.password-message {
-    margin-bottom: 10px;
-    padding: 10px 15px;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.password-message.error {
-    color: #b71c1c;
-    background-color: #ffcdd2;
-}
-
-.password-message.success {
-    color: #1b5e20;
-    background-color: #c8e6c9;
+.account-btn-cancel-order:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
