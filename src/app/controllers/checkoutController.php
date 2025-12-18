@@ -123,7 +123,7 @@ class CheckoutController {
                 'customer_id' => $this->customer_id,
                 'total' => $total_amount,
                 'payment_method' => $payment_method,
-                'payment_status' => $payment_method === 'cod' ? 'pending' : 'pending',
+                'payment_status' => ($payment_method === 'bank') ? 'success' : 'pending',
                 'shipping_address' => $shipping_info['address'],
                 'shipping_fullname' => $shipping_info['fullname'],
                 'shipping_phone' => $shipping_info['phone'],
